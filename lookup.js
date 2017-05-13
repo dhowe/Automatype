@@ -41,9 +41,9 @@ function LexiconLookup() {
 
     var result = this.getDeletions(input);
     // shuffle result ?
-    for (var r of result) {
-      if (!this.hq.contains(r))
-        return r;
+    for (var i = 0; i < result.length; i++) {
+      if (!this.hq.contains(result[i]))
+        return result[i];
     }
   }
 
@@ -81,9 +81,9 @@ function LexiconLookup() {
 
     var result = this.getInsertions(input);
     // shuffle result ?
-    for (var r of result) {
-      if (!this.hq.contains(r))
-        return r;
+    for (var i = 0; i < result.length; i++) {
+      if (!this.hq.contains(result[i]))
+        return result[i];
     }
   }
 

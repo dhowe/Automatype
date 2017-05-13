@@ -106,6 +106,7 @@ describe('LexiconLookup', function () {
       res = ll.mutations('virgin');
       assert.setEqual([ 'vigil' ], res);
 
+      // WORKING HERE
     });
   });
 
