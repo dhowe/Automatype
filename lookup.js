@@ -1,3 +1,5 @@
+var RiTa, RiLexicon;
+
 if (typeof module != 'undefined') { // for node
   RiTa = require('rita');
   RiLexicon = RiTa.RiLexicon;
@@ -17,6 +19,8 @@ function HistoryQueue(sz) {
   this.empty = function() { return this.q.length > 0; }
   this.oldest = function() { return this.q[0]; }
   this.size = function() { return this.q.length; }
+  this.indexOf = function(e) { return this.q.indexOf(e); }
+  this.shorten = function(n) { while (this.q.length > n) this.removeOldest(); }
 }
 
 function LexiconLookup() {
@@ -85,55 +89,63 @@ function LexiconLookup() {
 
   this.mutateWord = function(current) {
 
-    var relaxConstraints = function(current, minMed) {
-      var result = [];
-      while (result.size() < 1) {
-        minMed = this.lex.similarByLetter(current, result, minMed, true);
-        minMed++;
-      }
-      return result;
-    }
-
-    var result = this.lex.similarByLetter(current, true),
-      history = this.hq, constraintsRelaxed = false, nextWord = result.pop();
-
-    while (!history.empty() && history.contains(nextWord)) {
-
-      if (result.length === 0) { //  one result
-
-        if (history.size() > this.minHistorySize) {
-
-          history.removeOldest();
-          result.add(nextWord); // re-add & re-try
-          continue;
-        }
-
-        // relax constraints and retry
-        if (!constraintsRelaxed) {
-
-          constraintsRelaxed = true;
-          while (result.length < 2) {
-            result = this.relaxConstraints(current, ++med);
-          }
-
-          nextWord = result.shift();
-          continue;
-        }
-
-        console.err("[WARN] Only one result for: " + current + "->" +
-          nextWord + ", but its already in history("+history.size()+"): ", history);
-
-        nextWord = this.randomWord(current.length);
-      }
-
-      //  multiple results
-      nextWord = RiTa.randomItem(result);
-    }
-
-    return nextWord;
+    return RiTa.randomItem(this.mutations(current));
   }
 
-}// end class
+  this.mutations = function(word) {
+
+    var fail = function(m) {
+      console.error('[WARN] similarByLetter failed for '+word, m);
+      if (1) throw Error();
+      return [ this.randomWord(word.length) ];
+    }
+
+    // Sort by minEditDistance; pick random if med is equal
+    var medShuffle = function(a, b) {
+      var amed = RiTa.minEditDistance(word, a),
+        bmed = RiTa.minEditDistance(word, b);
+      //console.log(a,'=',amed,'\n',b,'=',bmed);
+      return (amed === bmed) ? Math.random()-.5 : amed - bmed;
+    }
+
+    var history = this.hq;
+
+    // 1. check for similars of same-length not in full-history
+    var current = this.lex.similarByLetter(word, 1, true);
+    var good = current.filter(function(w) {
+      return !history.contains(w);
+    });
+
+    // 2. check for similars of 1-off-length not in full-history
+    if (!good.length) {
+      console.log('Trying 2: ',word);
+      current = this.lex.similarByLetter(word, 1, false);
+      good = current.filter(function(w) {
+        return !history.contains(w) && Math.abs(word.length - w.length) < 2;
+      });
+      console.log('FOUND: ',good);
+    }
+
+    // 3. check for similars of same-length not in short-history
+    if (!good.length) {
+      console.log('Trying 3: ',word);
+      good = current.filter(function(w) {
+        return history.indexOf(w) < this.minHistorySize;
+      });
+    }
+
+    // 4. check for similars of 1-off-length not in short-history
+    if (!good.length) {
+      console.log('Trying 4: ',word);
+      good = current.filter(function(w) {
+        return history.indexOf(w) < this.minHistorySize;
+      });
+    }
+
+    return good.sort(medShuffle) || fail('no similarByLetter result');
+  }
+
+}// End class
 
 if (typeof module != 'undefined' && module.exports) { // for node
 

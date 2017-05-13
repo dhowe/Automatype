@@ -17,23 +17,23 @@ import rita.support.MinEditDist;
 import rita.support.RiRandomIterator;
 
 public class LexiconLookup {
-  
+
   static MinEditDist med = new MinEditDist();
-     
+
   Map objectHistory;
   RiLexicon lexicon;
   int minHistorySize = 10;
-  
-  public LexiconLookup(PApplet p, int histSize) {  
-    lexicon = new RiLexicon(p);        
+
+  public LexiconLookup(PApplet p, int histSize) {
+    lexicon = new RiLexicon(p);
     objectHistory = new HashMap();
     this.minHistorySize = histSize;
   }
- 
+
   public String getDeletions(WordTransformCell cell)
   {
     String result = null;
-    String word = cell.word.getText();    
+    String word = cell.word.getText();
     Set s = lexicon.singleLetterDeletes(word);
     HistoryQueue hq = getHistory(cell);
     Iterator it = new RiRandomIterator(s);
@@ -43,7 +43,7 @@ public class LexiconLookup {
       if (!hq.contains(next)) {
         result = next;
         break;
-      }      
+      }
     }
     return result;
   }
@@ -57,20 +57,20 @@ public class LexiconLookup {
       String pre = input.substring(0, i);
       String post = input.substring(i);
       for (int j = 0; j < 26; j++)
-      {        
+      {
         char sub = (char)(j+97);
         String test = pre+sub+post;
-        if (lexicon.contains(test)) 
-          result.add(test); 
-      }      
-    }    
+        if (lexicon.contains(test))
+          result.add(test);
+      }
+    }
     return result;
   }
-  
+
   public String getInsertions(WordTransformCell cell)
   {
     String result = null;
-    String word = cell.word.getText();    
+    String word = cell.word.getText();
     Set s = singleLetterInsertions(word);
     HistoryQueue hq = getHistory(cell);
     Iterator it = new RiRandomIterator(s);
@@ -80,17 +80,17 @@ public class LexiconLookup {
       if (!hq.contains(next)) {
         result = next;
         break;
-      }      
+      }
     }
     return result;
   }
-  
-  public String mutateWordWithTarget(WordTransformCell cell, String target) 
+
+  public String mutateWordWithTarget(WordTransformCell cell, String target)
   {
     return mutateWord(cell.word.getText(), target, getHistory(cell));
   }
-  
-  public String mutateWord(WordTransformCell cell) 
+
+  public String mutateWord(WordTransformCell cell)
   {
     return mutateWord(cell.word.getText(), getHistory(cell));
   }
@@ -104,7 +104,7 @@ public class LexiconLookup {
     }
     return hq;
   }
-  
+
   class StringCompare implements Comparator {
     private String target;
     public StringCompare(String targ) {
@@ -112,75 +112,75 @@ public class LexiconLookup {
     }
     public int compare(Object o1, Object o2) {
       int med1 = med.computeRaw((String)o1, target);
-      int med2 = med.computeRaw((String)o2, target);      
+      int med2 = med.computeRaw((String)o2, target);
       if (med1 == med2) return 0;
       return med1 < med2 ? -1 : 1;
-    }    
+    }
   }
-  
-  public String mutateWord(String current, HistoryQueue history) 
-  {   
+
+  public String mutateWord(String current, HistoryQueue history)
+  {
     return mutateWord(current, null, history, new HashSet());
   }
-  
-  public String mutateWord(String current, String target, HistoryQueue history) 
-  {   
+
+  public String mutateWord(String current, String target, HistoryQueue history)
+  {
     return mutateWord(current, null, history, new TreeSet(new StringCompare(target)));
   }
 
-  public String mutateWord(String current, String target, HistoryQueue history, Set result) 
-  {    
-    // get some initial results 
-    int med = lexicon.similarByLetter(current, result, true);    
-    
+  public String mutateWord(String current, String target, HistoryQueue history, Set result)
+  {
+    // get some initial results
+    int med = lexicon.similarByLetter(current, result, true);
+
     //System.out.println("LexiconLookup.mutateWord("+current+")");
-    
-    boolean constraintsRelaxed = false;    
+
+    boolean constraintsRelaxed = false;
     String nextWord = (result instanceof SortedSet) ?
         removeFirst(result) : removeRandom(result);
-          
+
     // check it against the history
-    while (!history.isEmpty() && history.contains(nextWord)) 
+    while (!history.isEmpty() && history.contains(nextWord))
     {
-      if (result.size() < 1) // only one result 
+      if (result.size() < 1) // only one result
       {
         // pop extra words from history & retry
         if (history.size() > minHistorySize) {
           history.removeOldest();
           result.add(nextWord); // re-add & re-try
           continue;
-        }          
-        
+        }
+
         // relax constraints and retry
         if (!constraintsRelaxed) {
-          
-          constraintsRelaxed = true;            
+
+          constraintsRelaxed = true;
           while (result.size() < 2) {
-            relaxConstraints(current, result, ++med);  
+            relaxConstraints(current, result, ++med);
           }
-          
+
           nextWord = (result instanceof SortedSet) ?
-            removeFirst(result) : removeRandom(result);  
-            
+            removeFirst(result) : removeRandom(result);
+
           continue;
-        }          
-        
+        }
+
         // does this ever happen? yes
         System.err.println("[WARN] Found 1 result for: " + current+"->"+
           nextWord+", but its already in the history("+history.size()+"): "+history);
-        
+
         nextWord = this.getRandomWord(current.length()); // only if PROD=true
       }
-      
-      history.removeOldest();        
+
+      history.removeOldest();
       nextWord = (result instanceof SortedSet) ?
         removeFirst(result) : removeRandom(result);
-    }      
+    }
 
     if (nextWord == null)
-      throw new RuntimeException("Null word picked for: "+current); 
-    
-    return nextWord;    
+      throw new RuntimeException("Null word picked for: "+current);
+
+    return nextWord;
   }
 
   private String removeFirst(Set result) {
@@ -189,7 +189,7 @@ public class LexiconLookup {
       return null;
     return (String)result.iterator().next();
   }
-    
+
   private String removeRandom(Set result) {
     String nextWord;
     nextWord = (String) RiTa.random(result);
@@ -211,12 +211,12 @@ public class LexiconLookup {
   public String getRandomWord(int len) {
     return lexicon.getRandomWord(len);
   }
-  
+
   public String getRandomWord(int min, int max) {
     int len = min + (int) (Math.random()*(max-min));
     return getRandomWord(len);
   }
-  
+
   public static void main2(String[] args) {
     String[] test = {"nappy", "dog", "hog", "sappi",  };
     LexiconLookup ll = new LexiconLookup(null, 10);
@@ -226,7 +226,7 @@ public class LexiconLookup {
     }
     System.out.println(s);
   }
-  
+
   public int totalCount(int minLength, int maxLength) {
     int count = 0;
     Iterator it = this.lexicon.iterator();
@@ -238,18 +238,18 @@ public class LexiconLookup {
     }
     return count;
   }
-    
+
   public static void main(String[] args) {
-    
+
     int idx = 0;
     LexiconLookup ll = new LexiconLookup(null, 10);
     HistoryQueue hq = new HistoryQueue(10);
     String start = ll.getRandomWord(6);
     System.out.println("start="+start);
-    while (++idx<20) { 
+    while (++idx<20) {
       start = ll.mutateWord(start, "though", hq);
       System.out.println(idx+") "+start+" med="+med.computeRaw(start, "though"));
-    }    
+    }
   }
 
 }// end

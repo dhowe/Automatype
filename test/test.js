@@ -1,15 +1,20 @@
 var assert = require('assert');
 var LexiconLookup = require('../lookup');
-//var LexiconLookup = lookup.LexiconLookup;
 
-assert.undef = function(a) {
+assert.undef = function (a) {
   assert(typeof a === 'undefined');
 }
 
-describe('LexiconLookup', function() {
+assert.setEqual = function (a, b) {
+  a.sort();
+  b.sort();
+  return assert.deepEqual(a, b);
+}
 
-  describe('#randomWord(n)', function() {
-    it('should return a word of length n', function() {
+describe('LexiconLookup', function () {
+
+  describe('#randomWord(n)', function () {
+    it('should return a word of length n', function () {
       var ll = new LexiconLookup();
       for (var i = 0; i < 5; i++) {
         var word = ll.randomWord(5);
@@ -18,56 +23,94 @@ describe('LexiconLookup', function() {
     });
   });
 
-  describe('#getInsertions(word)', function() {
-    it('should return words with size word.length+1', function() {
-      var ll = new LexiconLookup(), res;
+  describe('#getInsertions(word)', function () {
+    it('should return words with size word.length+1', function () {
+      var ll = new LexiconLookup(),
+        res;
       res = ll.getInsertions('flak');
-      assert.deepEqual(["flank", "flask"], res);
+      assert.setEqual([ "flank", "flask" ], res);
       res = ll.getInsertions('maze');
-      assert.deepEqual(["amaze"], res);
+      assert.setEqual([ "amaze" ], res);
       res = ll.getInsertions('hype');
-      assert.deepEqual([], res);
+      assert.setEqual([], res);
     });
   });
 
-  describe('#getDeletions(word)', function() {
-    it('should return words with size word.length-1', function() {
-      var ll = new LexiconLookup(), res;
+  describe('#getDeletions(word)', function () {
+    it('should return words with size word.length-1', function () {
+      var ll = new LexiconLookup(),
+        res;
       res = ll.getDeletions('wore');
-      assert.deepEqual(["ore", "woe"], res);
+      assert.setEqual([ "ore", "woe" ], res);
       res = ll.getDeletions('plan');
-      assert.deepEqual(["pan"], res);
+      assert.setEqual([ "pan" ], res);
       res = ll.getDeletions('cake');
-      assert.deepEqual([], res);
+      assert.setEqual([], res);
     });
   });
 
-  describe('#getInsertion(word)', function() {
-    it('should return single words with size word.length+1', function() {
-      var ll = new LexiconLookup(), res;
+  describe('#getInsertion(word)', function () {
+    it('should return single words with size word.length+1', function () {
+      var ll = new LexiconLookup(),
+        res;
       res = ll.getInsertion('flak');
       assert.equal("flank" || "flask", res);
       res = ll.getInsertion('maze');
       assert.equal("amaze", res);
       res = ll.getInsertion('hype');
       assert.undef(res);
+
+      ll.hq.add("flank"); // with history
+      for (var i = 0; i < 5; i++) {
+        res = ll.getInsertion('flak');
+        assert.equal("flask", res);
+      }
     });
   });
 
-  describe('#getDeletion(word)', function() {
-    it('should return single words with size word.length-1', function() {
-      var ll = new LexiconLookup(), res;
+  describe('#getDeletion(word)', function () {
+    it('should return single words with size word.length-1', function () {
+      var ll = new LexiconLookup(),
+        res;
       res = ll.getDeletion('wore');
       assert.equal("ore" || "woe", res);
       res = ll.getDeletion('plan');
       assert.equal("pan", res);
       res = ll.getDeletion('cake');
       assert.undef(res);
+
+      ll.hq.add("ore"); // with history
+      for (var i = 0; i < 5; i++) {
+        res = ll.getDeletion('wore');
+        assert.equal("woe", res);
+      }
     });
   });
 
-  describe('#mutateWord(word)', function() {
-    it('should return single words with size word.length', function() {
+  describe('#mutations(word)', function () {
+    it('should return closest mutations of input word', function () {
+      var ll = new LexiconLookup(),
+        res;
+
+      res = ll.mutations('virgin');
+      assert.setEqual([ "margin", "violin" ], res);
+
+      res = ll.mutations('churns');
+      assert.setEqual([ 'chorus', 'church', 'mourns', 'spurns' ], res);
+
+      ll.hq.add("margin");
+      res = ll.mutations('virgin');
+      assert.setEqual([ "violin" ], res);
+
+      ll.hq.add("violin");
+      res = ll.mutations('virgin');
+      assert.setEqual([ 'vigil' ], res);
+
+    });
+  });
+
+  /*describe('#mutateWord(word)', function() {
+    it('should return a close mutation of input word', function() {
       var ll = new LexiconLookup(), res;
 
       res = ll.mutateWord('wore');
@@ -78,17 +121,5 @@ describe('LexiconLookup', function() {
       res = ll.mutateWord('envy');
       assert.equal("envoy", res);
     });
-  });
-
-  // describe('#mutations(word)', function() {
-  //   it('should return single words with size word.length', function() {
-  //     var ll = new LexiconLookup(), res;
-  //     res = ll.mutations('wore');
-  //     assert.deepEqual(["ore", "woe"], res);
-  //     res = ll.mutations('plan');
-  //     assert.deepEqual(["pan"], res);
-  //     res = ll.mutations('cake');
-  //     assert.deepEqual([], res);
-  //   });
-  // });
+  });*/
 });
