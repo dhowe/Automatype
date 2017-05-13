@@ -69,12 +69,26 @@ describe('LexiconLookup', function() {
   describe('#mutateWord(word)', function() {
     it('should return single words with size word.length', function() {
       var ll = new LexiconLookup(), res;
+
       res = ll.mutateWord('wore');
-      assert.deepEqual(["ore", "woe"], res);
-      res = ll.mutateWord('plan');
-      assert.deepEqual(["pan"], res);
-      res = ll.mutateWord('cake');
-      assert.deepEqual([], res);
+      assert.equal("ore" || "woe", res);
+
+      res = ll.mutateWord('mien');
+      assert.equal("min", res);
+      res = ll.mutateWord('envy');
+      assert.equal("envoy", res);
     });
   });
+
+  // describe('#mutations(word)', function() {
+  //   it('should return single words with size word.length', function() {
+  //     var ll = new LexiconLookup(), res;
+  //     res = ll.mutations('wore');
+  //     assert.deepEqual(["ore", "woe"], res);
+  //     res = ll.mutations('plan');
+  //     assert.deepEqual(["pan"], res);
+  //     res = ll.mutations('cake');
+  //     assert.deepEqual([], res);
+  //   });
+  // });
 });

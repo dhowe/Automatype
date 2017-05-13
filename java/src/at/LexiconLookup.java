@@ -140,7 +140,7 @@ public class LexiconLookup {
         removeFirst(result) : removeRandom(result);
           
     // check it against the history
-    W1: while (!history.isEmpty() && history.contains(nextWord)) 
+    while (!history.isEmpty() && history.contains(nextWord)) 
     {
       if (result.size() < 1) // only one result 
       {
@@ -148,7 +148,7 @@ public class LexiconLookup {
         if (history.size() > minHistorySize) {
           history.removeOldest();
           result.add(nextWord); // re-add & re-try
-          continue W1;
+          continue;
         }          
         
         // relax constraints and retry
@@ -162,7 +162,7 @@ public class LexiconLookup {
           nextWord = (result instanceof SortedSet) ?
             removeFirst(result) : removeRandom(result);  
             
-          continue W1;
+          continue;
         }          
         
         // does this ever happen? yes
@@ -238,7 +238,6 @@ public class LexiconLookup {
     }
     return count;
   }
-
     
   public static void main(String[] args) {
     
@@ -252,6 +251,5 @@ public class LexiconLookup {
       System.out.println(idx+") "+start+" med="+med.computeRaw(start, "though"));
     }    
   }
-
 
 }// end

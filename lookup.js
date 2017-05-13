@@ -1,5 +1,6 @@
 if (typeof module != 'undefined') { // for node
-  RiLexicon = require('rita').RiLexicon;
+  RiTa = require('rita');
+  RiLexicon = RiTa.RiLexicon;
 }
 
 function HistoryQueue(sz) {
@@ -12,14 +13,17 @@ function HistoryQueue(sz) {
   }
   this.contains = function(w) { return this.q.indexOf(w) > -1; }
   this.newest = function() { return this.q[this.q.length-1]; }
+  this.removeOldest = function() { return this.q.shift(); }
   this.empty = function() { return this.q.length > 0; }
   this.oldest = function() { return this.q[0]; }
+  this.size = function() { return this.q.length; }
 }
 
 function LexiconLookup() {
 
   this.lex = RiLexicon();
   this.hq = new HistoryQueue(20);
+  this.minHistorySize = 10;
 
   this.randomWord = function(len) {
 
@@ -80,15 +84,56 @@ function LexiconLookup() {
   }
 
   this.mutateWord = function(current) {
-    var result = [];
-    var med = this.lex.similarByLetter(current, true);
-    console.log(result, med);
-    var constraintsRelaxed = false, nextWord = med.pop();
-    while (!this.hq.empty() && this.hq.contains(nextWord)) {
 
+    var relaxConstraints = function(current, minMed) {
+      var result = [];
+      while (result.size() < 1) {
+        minMed = this.lex.similarByLetter(current, result, minMed, true);
+        minMed++;
+      }
+      return result;
     }
+
+    var result = this.lex.similarByLetter(current, true),
+      history = this.hq, constraintsRelaxed = false, nextWord = result.pop();
+
+    while (!history.empty() && history.contains(nextWord)) {
+
+      if (result.length === 0) { //  one result
+
+        if (history.size() > this.minHistorySize) {
+
+          history.removeOldest();
+          result.add(nextWord); // re-add & re-try
+          continue;
+        }
+
+        // relax constraints and retry
+        if (!constraintsRelaxed) {
+
+          constraintsRelaxed = true;
+          while (result.length < 2) {
+            result = this.relaxConstraints(current, ++med);
+          }
+
+          nextWord = result.shift();
+          continue;
+        }
+
+        console.err("[WARN] Only one result for: " + current + "->" +
+          nextWord + ", but its already in history("+history.size()+"): ", history);
+
+        nextWord = this.randomWord(current.length);
+      }
+
+      //  multiple results
+      nextWord = RiTa.randomItem(result);
+    }
+
+    return nextWord;
   }
-}
+
+}// end class
 
 if (typeof module != 'undefined' && module.exports) { // for node
 
