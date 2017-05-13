@@ -45,7 +45,25 @@ public class LexiconLookup {
         break;
       }      
     }
-//System.out.println("Deletions("+word+")="+s);
+    return result;
+  }
+
+  public Set singleLetterInsertions(String input)
+  {
+    //List result = new ArrayList();
+    Set result = new HashSet();
+    for (int i = 0; i < input.length(); i++)
+    {
+      String pre = input.substring(0, i);
+      String post = input.substring(i);
+      for (int j = 0; j < 26; j++)
+      {        
+        char sub = (char)(j+97);
+        String test = pre+sub+post;
+        if (lexicon.contains(test)) 
+          result.add(test); 
+      }      
+    }    
     return result;
   }
   
@@ -53,8 +71,7 @@ public class LexiconLookup {
   {
     String result = null;
     String word = cell.word.getText();    
-    Set s = lexicon.singleLetterInsertions(word);
-//System.out.println("Insertions("+word+")="+s);
+    Set s = singleLetterInsertions(word);
     HistoryQueue hq = getHistory(cell);
     Iterator it = new RiRandomIterator(s);
     while (it.hasNext())
@@ -115,12 +132,9 @@ public class LexiconLookup {
   {    
     // get some initial results 
     int med = lexicon.similarByLetter(current, result, true);    
-/*    if (result instanceof SortedSet && target != null) {
-      for (Iterator it = result.iterator(); it.hasNext();) {
-        String s = it.next()+"";  
-        System.out.println(s+" med="+LexiconLookup.med.computeRaw(s, target));        
-      }
-    }*/
+    
+    System.out.println("LexiconLookup.mutateWord("+current+")");
+    
     boolean constraintsRelaxed = false;    
     String nextWord = (result instanceof SortedSet) ?
         removeFirst(result) : removeRandom(result);
@@ -128,7 +142,7 @@ public class LexiconLookup {
     // check it against the history
     W1: while (!history.isEmpty() && history.contains(nextWord)) 
     {
-      if (result.size()<1) // only one result 
+      if (result.size() < 1) // only one result 
       {
         // pop extra words from history & retry
         if (history.size() > minHistorySize) {
@@ -144,8 +158,10 @@ public class LexiconLookup {
           while (result.size() < 2) {
             relaxConstraints(current, result, ++med);  
           }
+          
           nextWord = (result instanceof SortedSet) ?
-            removeFirst(result) : removeRandom(result);          
+            removeFirst(result) : removeRandom(result);  
+            
           continue W1;
         }          
         
@@ -155,6 +171,7 @@ public class LexiconLookup {
         
         nextWord = this.getRandomWord(current.length()); // only if PROD=true
       }
+      
       history.removeOldest();        
       nextWord = (result instanceof SortedSet) ?
         removeFirst(result) : removeRandom(result);
@@ -187,10 +204,8 @@ public class LexiconLookup {
     result.clear();
     while (result.size() < 1) {
       minMed = lexicon.similarByLetter(current, result, minMed, true);
-//System.out.println("Trying "+current+ " w' increased med="+minMed);
       minMed++;
     }
-//System.out.println("  MED("+minMed+") -> "+result);
   }
 
   public String getRandomWord(int len) {
@@ -229,10 +244,9 @@ public class LexiconLookup {
     
     int idx = 0;
     LexiconLookup ll = new LexiconLookup(null, 10);
-    if (1==1) return;
+    HistoryQueue hq = new HistoryQueue(10);
     String start = ll.getRandomWord(6);
     System.out.println("start="+start);
-    HistoryQueue hq = new HistoryQueue();
     while (++idx<20) { 
       start = ll.mutateWord(start, "though", hq);
       System.out.println(idx+") "+start+" med="+med.computeRaw(start, "though"));
