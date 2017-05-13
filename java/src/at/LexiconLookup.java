@@ -133,7 +133,7 @@ public class LexiconLookup {
     // get some initial results 
     int med = lexicon.similarByLetter(current, result, true);    
     
-    System.out.println("LexiconLookup.mutateWord("+current+")");
+    //System.out.println("LexiconLookup.mutateWord("+current+")");
     
     boolean constraintsRelaxed = false;    
     String nextWord = (result instanceof SortedSet) ?

@@ -6,6 +6,7 @@
     <script src="node_modules/p5/lib/p5.js" type="text/javascript"></script>
     <script src="node_modules/rita/lib/rita.js" type="text/javascript"></script>
     <script src="lib/rt.js" type="text/javascript"></script>
+    <script src="lookup.js" type="text/javascript"></script>
     <script>
 
 // ----------------------------------------------------------
@@ -22,12 +23,10 @@ function setup() {
   //console.log(hq, Object.keys(hq));
 
   hq = new HistoryQueue(20);
-  console.log(hq, Object.keys(hq));
-
   lexLook = new LexiconLookup();
   word = lexLook.randomWord(4);
   //setTimeout(nextEdit, INITIAL_KEY_PAUSE);
-  console.log(lexLook.getInsertions(word));
+  console.log(lexLook.mutateWord(word));
 }
 
 function nextEdit() {
@@ -62,7 +61,7 @@ function pickNextTarget() {
     prob = max(0, word.length() - parent.minWordLen) * .1;
     if (Math.random() < prob) {
       nextAction = DELETE_ACTION;
-      next = lexLook.getDeletions();
+      next = lexLook.getDeletion();
       //console.log("DELETE: next="+next+" curr="+word.cursorIdx);
     }
   }
@@ -72,7 +71,7 @@ function pickNextTarget() {
     prob = max(0, parent.maxWordLen - word.length()) * .1;
     if (Math.random() < prob) {
       nextAction = INSERT_ACTION;
-      next = lexLook.getInsertions();
+      next = lexLook.getInsertion();
     }
   }
 
@@ -96,81 +95,6 @@ function draw() {
   background(245);
   text(word, width/2, height/2);
   noLoop();
-}
-
-function LexiconLookup() {
-
-  this.lex = RiLexicon();
-
-  this.randomWord = function(len) {
-    var w = this.lex.randomWord();
-    while (w.length !== len)
-      w = this.lex.randomWord();
-    return w;
-  }
-
-  this.getDeletions = function() {
-    var result, set = this.lex.singleLetterDeletes(word);
-    set.forEach(function(next) {
-      if (!hq.contains(next)) {
-        result = next;
-        return;
-      }
-    });
-    return result;
-  }
-
-  this.singleLetterInsertions = function(input) {
-
-    var result = [], len = input.length;
-    for (var i = 0; i < len; i++)
-    {
-      var pre = input.substring(0, i),
-        post = input.substring(i);
-      for (var j = 0; j < 26; j++) {
-        var sub = String.fromCharCode(j+97);
-        var test = pre + sub + post;
-        if (this.lex.containsWord(test))
-          result.push(test);
-      }
-    }
-    return result;
-  }
-
-  this.getInsertions = function() {
-    var result, set = this.singleLetterInsertions(word);
-    set.forEach(function(next) {
-      console.log(Object.keys(hq));
-      if (!hq.contains(next)) {
-        result = next;
-        return;
-      }
-    });
-    return result;
-  }
-
-  this.mutateWord = function(current) {
-    var result = [];
-    var med = this.lex.similarByLetter(current, result, true);
-    var constraintsRelaxed = false, nextWord = med.pop();
-    while (!hq.empty() && hq.contains(nextWord)) {
-
-    }
-  }
-}
-
-function HistoryQueue(sz) {
-  this.q = [];
-  this.capacity = sz;
-  this.add = function(e) {
-    this.q.push(e);
-    while (this.q.length > this.capacity)
-      this.q.shift();
-  }
-  this.contains = function(w) { return this.q.indexOf(w) > -1; }
-  this.newest = function() { return this.q[this.q.length-1]; }
-  this.empty = function() { return this.q.length > 0; }
-  this.oldest = function() { return this.q[0]; }
 }
 
     </script>
