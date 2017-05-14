@@ -21,7 +21,6 @@ function setup() {
   textAlign(CENTER, CENTER);
   //console.log(hq, Object.keys(hq));
 
-  hq = new HistoryQueue(20);
   lexLook = new LexiconLookup();
   //for (var i = 0; i < 10000; i++) {
   word = lexLook.randomWord(7);
@@ -29,8 +28,16 @@ function setup() {
     //console.log(lexLook.lex.similarByLetter('leviathan'));
     //setTimeout(nextEdit, INITIAL_KEY_PAUSE);
     //console.log(word);
-  console.log(word, lexLook.mutations(word));
-
+  // word = "virgin";
+  // lexLook.hq.add('margin', 'violin');
+  // console.log(word,lexLook.mutations(word));
+  lexLook.hq.add('commend');
+  for (var i = 0; i < 10; i++) {
+    lexLook.hq.add(lexLook.randomWord(7));
+  }
+  //console.log(ll.hq);
+  res = lexLook.mutations('comment');
+  console.log(res);
 }
 
 function nextEdit() {

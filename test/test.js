@@ -1,20 +1,47 @@
-var assert = require('assert');
-var LexiconLookup = require('../lookup');
+var assert = require('assert'), LexiconLookup = require('../lookup');
 
-assert.undef = function (a) {
+assert.undef = function(a) {
   assert(typeof a === 'undefined');
-}
+};
 
-assert.setEqual = function (a, b) {
+assert.equalAny = function(a, arr) {
+  return arr.indexOf(a) > -1;
+};
+
+assert.setEqual = function(a, b) {
   a.sort();
   b.sort();
   return assert.deepEqual(a, b);
-}
+};
 
-describe('LexiconLookup', function () {
+describe('HistoryQueue', function() {
+  it('should maintain a fixed-size history array', function() {
+    var history = new LexiconLookup().hq;
+    history.add('a', 'b', 'c');
+    assert.equal('a', history.oldest());
+    assert.equal('c', history.newest());
+    assert.equal(3, history.size());
+    assert.equal(true, history.contains('a'));
+    assert.equal(false, history.contains('d'));
+    assert.equal('a', history.removeOldest());
+    assert.equal(2, history.size());
+    history.clear();
+    assert.equal(0, history.size());
+    history.add('a', 'b', 'c');
+    assert.equal(3, history.size());
+    assert.equal('a', history.oldest());
+    assert.equal('c', history.newest());
+    history.shorten(2);
+    assert.equal(2, history.size());
+    assert.equal(false, history.contains('a'));
+    assert.equal(true, history.contains('b'));
+    assert.equal(true, history.contains('c'));
+  });
+});
 
-  describe('#randomWord(n)', function () {
-    it('should return a word of length n', function () {
+describe('LexiconLookup', function() {
+  describe('#randomWord(n)', function() {
+    it('should return a word of length n', function() {
       var ll = new LexiconLookup();
       for (var i = 0; i < 5; i++) {
         var word = ll.randomWord(5);
@@ -23,104 +50,133 @@ describe('LexiconLookup', function () {
     });
   });
 
-  describe('#getInsertions(word)', function () {
-    it('should return words with size word.length+1', function () {
-      var ll = new LexiconLookup(),
-        res;
+  describe('#getInsertions(word)', function() {
+    it('should return words with size word.length+1', function() {
+      var ll = new LexiconLookup(), res;
       res = ll.getInsertions('flak');
-      assert.setEqual([ "flank", "flask" ], res);
+      assert.setEqual(['flank', 'flask'], res);
       res = ll.getInsertions('maze');
-      assert.setEqual([ "amaze" ], res);
+      assert.setEqual(['amaze'], res);
       res = ll.getInsertions('hype');
       assert.setEqual([], res);
     });
   });
 
-  describe('#getDeletions(word)', function () {
-    it('should return words with size word.length-1', function () {
-      var ll = new LexiconLookup(),
-        res;
+  describe('#getDeletions(word)', function() {
+    it('should return words with size word.length-1', function() {
+      var ll = new LexiconLookup(), res;
       res = ll.getDeletions('wore');
-      assert.setEqual([ "ore", "woe" ], res);
+      assert.setEqual(['ore', 'woe'], res);
       res = ll.getDeletions('plan');
-      assert.setEqual([ "pan" ], res);
+      assert.setEqual(['pan'], res);
       res = ll.getDeletions('cake');
       assert.setEqual([], res);
     });
   });
 
-  describe('#getInsertion(word)', function () {
-    it('should return single words with size word.length+1', function () {
-      var ll = new LexiconLookup(),
-        res;
+  describe('#getInsertion(word)', function() {
+    it('should return single words with size word.length+1', function() {
+      var ll = new LexiconLookup(), res;
       res = ll.getInsertion('flak');
-      assert.equal("flank" || "flask", res);
+      assert.equal('flank' || 'flask', res);
       res = ll.getInsertion('maze');
-      assert.equal("amaze", res);
+      assert.equal('amaze', res);
       res = ll.getInsertion('hype');
       assert.undef(res);
 
-      ll.hq.add("flank"); // with history
+      ll.hq.add('flank'); // with history
       for (var i = 0; i < 5; i++) {
         res = ll.getInsertion('flak');
-        assert.equal("flask", res);
+        assert.equal('flask', res);
       }
     });
   });
 
-  describe('#getDeletion(word)', function () {
-    it('should return single words with size word.length-1', function () {
-      var ll = new LexiconLookup(),
-        res;
+  describe('#getDeletion(word)', function() {
+    it('should return single words with size word.length-1', function() {
+      var ll = new LexiconLookup(), res;
       res = ll.getDeletion('wore');
-      assert.equal("ore" || "woe", res);
+      assert.equal('ore' || 'woe', res);
       res = ll.getDeletion('plan');
-      assert.equal("pan", res);
+      assert.equal('pan', res);
       res = ll.getDeletion('cake');
       assert.undef(res);
 
-      ll.hq.add("ore"); // with history
+      ll.hq.add('ore'); // with history
       for (var i = 0; i < 5; i++) {
         res = ll.getDeletion('wore');
-        assert.equal("woe", res);
+        assert.equal('woe', res);
       }
     });
   });
 
-  describe('#mutations(word)', function () {
-    it('should return closest mutations of input word', function () {
-      var ll = new LexiconLookup(),
-        res;
+  describe('#mutations(word)', function() {
+    it('should return closest mutations of input word', function() {
+      var ll = new LexiconLookup(), res;
+
+      res = ll.mutations('embarks');
+      assert.setEqual(['embargo'], res);
+
+      res = ll.mutations('comment');
+      assert.setEqual(['commend'], res);
 
       res = ll.mutations('virgin');
-      assert.setEqual([ "margin", "violin" ], res);
+      assert.setEqual(['margin', 'violin'], res);
 
       res = ll.mutations('churns');
-      assert.setEqual([ 'chorus', 'church', 'mourns', 'spurns' ], res);
+      assert.setEqual(['chorus', 'church', 'mourns', 'spurns'], res);
 
-      ll.hq.add("margin");
+      // checks in history ------------------------------
+      ll.hq.add('margin');
       res = ll.mutations('virgin');
-      assert.setEqual([ "violin" ], res);
+      assert.setEqual(['violin'], res);
 
-      ll.hq.add("violin");
+      // checks case 2 ----------------------------------
+      ll.hq.add('violin');
       res = ll.mutations('virgin');
-      assert.setEqual([ 'vigil' ], res);
+      assert.setEqual(['vigil'], res);
 
-      // WORKING HERE
+      // checks case 2 ----------------------------------
+      ll.hq.add('embargo');
+      res = ll.mutations('embarks');
+      assert.setEqual(['embark'], res);
+
+      // checks case 3 ----------------------------------
+      ll.hq.add('commend');
+      for (var i = 0; i < 10; i++) {
+        ll.hq.add(ll.randomWord(7));
+      }
+      res = ll.mutations('comment');
+      assert.setEqual(['commend'], res);
+
+      // check needed for case 4
     });
   });
 
-  /*describe('#mutateWord(word)', function() {
+  describe('#mutateWord(word)', function() {
     it('should return a close mutation of input word', function() {
       var ll = new LexiconLookup(), res;
 
-      res = ll.mutateWord('wore');
-      assert.equal("ore" || "woe", res);
+      res = ll.mutateWord('resting');
+      assert.equalAny(
+        ['renting', 'nesting', 'besting', 'vesting', 'testing', 'rusting'],
+        res
+      );
 
-      res = ll.mutateWord('mien');
-      assert.equal("min", res);
-      res = ll.mutateWord('envy');
-      assert.equal("envoy", res);
+      res = ll.mutateWord('hosting');
+      assert.equalAny(['costing', 'posting'], res);
+
+      // case 2
+      ll.hq.add('posting');
+      res = ll.mutateWord('hosting');
+      assert.equal('costing', res);
+
+      // case 3
+      ll.hq.add('costing');
+      res = ll.mutateWord('hosting');
+      assert.equal('hoisting', res);
+
+      // check needed for case 4
     });
-  });*/
+  });
 });
