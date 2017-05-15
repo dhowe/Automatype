@@ -15,7 +15,7 @@ assert.setEqual = function(a, b) {
 };
 
 describe('HistoryQueue', function() {
-  it('should maintain a fixed-size history array', function() {
+  it('should provide basic fixed-sized history', function() {
     var history = new LexiconLookup().hq;
     history.add('a', 'b', 'c');
     assert.equal('a', history.oldest());
@@ -93,7 +93,7 @@ describe('LexiconLookup', function() {
   });
 
   describe('#getDeletion(word)', function() {
-    it('should return single words with size word.length-1', function() {
+    it('should return single word with size word.length-1', function() {
       var ll = new LexiconLookup(), res;
       res = ll.getDeletion('wore');
       assert.equal('ore' || 'woe', res);
