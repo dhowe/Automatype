@@ -206,6 +206,7 @@ public class LexiconLookup {
       minMed = lexicon.similarByLetter(current, result, minMed, true);
       minMed++;
     }
+    System.out.println(result);
   }
 
   public String getRandomWord(int len) {
@@ -242,12 +243,20 @@ public class LexiconLookup {
   public static void main(String[] args) {
 
     int idx = 0;
+    HashSet<String> result = new HashSet<String>(); 
     LexiconLookup ll = new LexiconLookup(null, 10);
     HistoryQueue hq = new HistoryQueue(10);
+    
     String start = ll.getRandomWord(6);
+    
+    start = "mourner";
+    hq.add("mourned");
+    ll.lexicon.similarByLetter(start, result);
+    System.out.println(hq);
+    System.out.println(result);
     System.out.println("start="+start);
-    while (++idx<20) {
-      start = ll.mutateWord(start, "though", hq);
+    while (++idx<2) {
+      start = ll.mutateWord(start, hq);
       System.out.println(idx+") "+start+" med="+med.computeRaw(start, "though"));
     }
   }

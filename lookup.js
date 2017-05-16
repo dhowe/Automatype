@@ -50,6 +50,7 @@ function HistoryQueue(sz) {
 }
 
 function LexiconLookup() {
+  this.dbug = false;
   this.lex = new RiLexicon();
   this.hq = new HistoryQueue(20);
   this.minHistorySize = 10;
@@ -113,8 +114,98 @@ function LexiconLookup() {
     return this.mutations(current)[0];
   };
 
+  // 1. check similars not in history (med=1)
+  // 2. compact history and retry
+  // 3. check similars with med relaxed (med=2..n)
+  // 4. pick random
   this.mutations = function(word) {
-    var result, lexicon = this.lex, dbug = false, history = this.hq;
+    var result,
+      dbug = this.dbug,
+      med = 1,
+      history = this.hq,
+      tmp = this.lex.similarByLetter(word, med, true);
+
+    var notInHistory = function(w) {
+      return !history.contains(w);
+    };
+
+    var fail = function(ll, m) {
+      console.error(
+        "[WARN] similarByLetter failed for '" + word + "';",
+        m + '\n',
+        this.hq
+      );
+      //throw Error();
+      return [ll.randomWord(word.length)];
+    };
+
+    // Sort by minEditDistance; pick random if med is equal
+    var medShuffle = function(a, b) {
+      var amed = RiTa.minEditDistance(word, a),
+        bmed = RiTa.minEditDistance(word, b);
+      //console.log(a,'=',amed,'\n',b,'=',bmed);
+      return amed === bmed ? Math.random() - 0.5 : amed - bmed;
+    };
+
+    dbug && console.log('\n1. Try(' + word + '): ', tmp);
+
+    if (tmp.length) {
+      med = RiTa.minEditDistance(tmp[0], word);
+      dbug && console.log('Found (med=' + med + ')', tmp);
+
+      // 1. try for similars not in history
+      result = tmp.filter(notInHistory);
+
+      dbug && console.log('2. Filter(' + word + '): ', result);
+
+      if (!result.length) {
+        dbug && console.log('3. Compacting...');
+        // 2. no good ones, compact history, rety
+        history.shorten(this.minHistorySize);
+        result = tmp.filter(notInHistory);
+        dbug && console.log('4. Filter (' + word + '): ', result);
+      }
+    }
+
+    // 3. nothing, so relax our med constraints until we find something
+    while (!result.length && med < word.length) {
+      // 2nd check needed?
+
+      med++;
+
+      tmp = this.lex.similarByLetter(word, med, true);
+      dbug &&
+        console.log('5. Relaxing ' + med + '(' + word + ')(' + med + ')', tmp);
+      if (tmp.length) {
+        result = tmp.filter(notInHistory);
+        dbug &&
+          console.log(
+            '6. Filtered ' + med + '(' + word + ')(' + med + ')',
+            result
+          );
+      }
+    }
+
+    if (!result.length) {
+      result = this.lex.similarByLetter(word, med, false).filter(notInHistory);
+      dbug && console.log('7. Any-length(' + word + '): ', result);
+    }
+
+    if (!result.length) { // not sure this is needed
+
+      // 5. give up, print warning, pick a random word
+      return fail(this, '*** no similarByLetter result');
+    }
+
+    return result.sort(medShuffle);
+  };
+
+  this.mutationsX = function(word) {
+    var result, lexicon = this.lex, dbug = 1, history = this.hq;
+
+    var notInHistory = function(w) {
+      return !history.contains(w);
+    };
 
     var fail = function(ll, m) {
       console.error("[WARN] similarByLetter failed for '" + word + "';", m);
@@ -122,9 +213,9 @@ function LexiconLookup() {
       return [ll.randomWord(word.length)];
     };
 
-    var findSimilars = function(word, preserveLength, tryNum) {
+    var findSimilars = function(word, med, preserveLength, filter, tryNum) {
       dbug && tryNum && console.log('Trying ' + tryNum + ': ', word);
-      var current = lexicon.similarByLetter(word, 1, preserveLength);
+      var current = lexicon.similarByLetter(word, med, preserveLength);
       var res = current.filter(function(w) {
         var lenOk = !preserveLength || Math.abs(word.length - w.length) < 2;
         return lenOk && !history.contains(w);
@@ -142,21 +233,36 @@ function LexiconLookup() {
     };
 
     // 1. check for similars of same-length not in full-history
-    var result = findSimilars(word, true, 1);
+    var tmp = lexicon.similarByLetter(word, 1, true);
+
+    if (tmp.length) {
+      result = tmp.filter(notInHistory);
+
+      if (!result.length) {
+        if (history.size() > this.minHistorySize) {
+          history.shorten(this.minHistorySize);
+          result = tmp.filter(notInHistory);
+        }
+      }
+
+      if (!result.length) {
+        return result.sort(medShuffle);
+      }
+    }
 
     // 2. check for similars of 1-off-length not in full-history
-    if (!result.length) result = findSimilars(word, false, 2);
+    if (!result.length) result = findSimilars(word, 1, false, true, 2);
 
     // reduce the history size and retry
     if (!result.length) history.shorten(this.minHistorySize);
 
     // 3. check for similars of same-length in short-history
-    if (!result.length) result = findSimilars(word, true, 3);
+    if (!result.length) result = findSimilars(word, 1, true, true, 3);
 
-    // 4. check for similars of same-length in short-history
-    if (!result.length) result = findSimilars(word, false, 4);
+    // 4. check for similars of 1-off-length in short-history
+    if (!result.length) result = findSimilars(word, 1, false, true, 4);
 
-    // 5. give up, print warning, return a random word
+    // 5. give up, print warning, pick a random word
     if (!result.length) return fail(this, 'no similarByLetter result');
 
     return result.sort(medShuffle);

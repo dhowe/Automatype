@@ -40,6 +40,14 @@ describe('HistoryQueue', function() {
 });
 
 describe('LexiconLookup', function() {
+  describe('#similarByLetter(word, minMed)', function() {
+    it('should return words with med > minMed', function() {
+      var ll = new LexiconLookup(), res;
+      res = ll.lex.similarByLetter('mourner', 2, true);
+      assert.setEqual(['journey', 'tourney', 'courier'], res);
+    });
+  });
+
   describe('#randomWord(n)', function() {
     it('should return a word of length n', function() {
       var ll = new LexiconLookup();
@@ -110,9 +118,16 @@ describe('LexiconLookup', function() {
     });
   });
 
-  describe('#mutations(word)', function() {
+  describe.only('#mutations(word)', function() {
     it('should return closest mutations of input word', function() {
       var ll = new LexiconLookup(), res;
+
+      res = ll.mutations('mourner', 2, true);
+      assert.setEqual(['mourned'], res);
+
+      ll.hq.add('mourned');
+      res = ll.mutations('mourner', 2, true);
+      assert.setEqual(['journey', 'tourney', 'courier'], res);
 
       res = ll.mutations('embarks');
       assert.setEqual(['embargo'], res);
@@ -131,15 +146,45 @@ describe('LexiconLookup', function() {
       res = ll.mutations('virgin');
       assert.setEqual(['violin'], res);
 
-      // checks case 2 ----------------------------------
-      ll.hq.add('violin');
-      res = ll.mutations('virgin');
-      assert.setEqual(['vigil'], res);
-
-      // checks case 2 ----------------------------------
+      // checks case 5/6 ----------------------------------
       ll.hq.add('embargo');
       res = ll.mutations('embarks');
-      assert.setEqual(['embark'], res);
+      assert.setEqual(['embassy'], res);
+
+      // checks case 5/6 ----------------------------------
+      ll.hq.add('violin');
+      res = ll.mutations('virgin');
+      assert.setEqual(
+        [
+          'airing',
+          'airman',
+          'biggie',
+          'birdie',
+          'darlin',
+          'dioxin',
+          'fibrin',
+          'firing',
+          'girlie',
+          'herein',
+          'heroin',
+          'hiring',
+          'jargon',
+          'origin',
+          'sprain',
+          'strain',
+          'tiring',
+          'turgid',
+          'urging',
+          'vagina',
+          'victim',
+          'virile',
+          'virtue',
+          'vision',
+          'wiring',
+          'within'
+        ],
+        res
+      );
 
       // checks case 3 ----------------------------------
       ll.hq.add('commend');
@@ -149,13 +194,15 @@ describe('LexiconLookup', function() {
       res = ll.mutations('comment');
       assert.setEqual(['commend'], res);
 
-      // check needed for case 4
     });
   });
 
-  describe('#mutateWord(word)', function() {
+  describe.only('#mutateWord(word)', function() {
     it('should return a close mutation of input word', function() {
       var ll = new LexiconLookup(), res;
+
+      res = ll.mutateWord('mourner');
+      assert.equalAny(['mourned'], res);
 
       res = ll.mutateWord('resting');
       assert.equalAny(
@@ -171,12 +218,10 @@ describe('LexiconLookup', function() {
       res = ll.mutateWord('hosting');
       assert.equal('costing', res);
 
-      // case 3
-      ll.hq.add('costing');
-      res = ll.mutateWord('hosting');
-      assert.equal('hoisting', res);
-
-      // check needed for case 4
+      // case 5/6
+      ll.hq.add('mourned');
+      res = ll.mutateWord('mourner');
+      assert.equalAny(['journey', 'tourney', 'courier'], res);
     });
   });
 });
