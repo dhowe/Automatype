@@ -114,10 +114,12 @@ function LexiconLookup() {
     return this.mutations(current)[0];
   };
 
-  // 1. check similars not in history (med=1)
-  // 2. compact history and retry
-  // 3. check similars with med relaxed (med=2..n)
-  // 4. pick random
+  // TODO: make sure we have tests for each below
+  // a. check similars not in history (med=1)
+  // b. compact history and retry
+  // c. check similars with med relaxed (med=2..n)
+  // d. check similars with any length
+  // e. pick random
   this.mutations = function(word) {
     var result,
       dbug = this.dbug,
@@ -159,48 +161,41 @@ function LexiconLookup() {
       dbug && console.log('2. Filter(' + word + '): ', result);
 
       if (!result.length) {
-        dbug && console.log('3. Compacting...');
-        // 2. no good ones, compact history, rety
+        // 2. no good ones, compact history, retry
         history.shorten(this.minHistorySize);
         result = tmp.filter(notInHistory);
-        dbug && console.log('4. Filter (' + word + '): ', result);
+        dbug && console.log('4. Compacted-filter (' + word + '): ', result);
       }
     }
 
     // 3. nothing, so relax our med constraints until we find something
     while (!result.length && med < word.length) {
-      // 2nd check needed?
-
-      med++;
-
-      tmp = this.lex.similarByLetter(word, med, true);
-      dbug &&
-        console.log('5. Relaxing ' + med + '(' + word + ')(' + med + ')', tmp);
+      tmp = this.lex.similarByLetter(word, ++med, true);
+      dbug && console.log('5. Relaxing(' + word + ')(' + med + ') ->', tmp);
       if (tmp.length) {
         result = tmp.filter(notInHistory);
-        dbug &&
-          console.log(
-            '6. Filtered ' + med + '(' + word + ')(' + med + ')',
-            result
-          );
+        dbug && console.log('6. Filtered (' + word + ')(' + med + ')', result);
       }
     }
 
     if (!result.length) {
+      // not sure this is needed
+
       result = this.lex.similarByLetter(word, med, false).filter(notInHistory);
       dbug && console.log('7. Any-length(' + word + '): ', result);
     }
 
-    if (!result.length) { // not sure this is needed
-
+    if (!result.length) {
       // 5. give up, print warning, pick a random word
-      return fail(this, '*** no similarByLetter result');
+      return;
     }
 
-    return result.sort(medShuffle);
+    return result.length
+      ? result.sort(medShuffle)
+      : fail(this, '8. *** fail->random(' + word + '):');
   };
 
-  this.mutationsX = function(word) {
+  this.mutationsOLD = function(word) {
     var result, lexicon = this.lex, dbug = 1, history = this.hq;
 
     var notInHistory = function(w) {

@@ -21,6 +21,7 @@ function setup() {
   //console.log(hq, Object.keys(hq));
 
   lexLook = new LexiconLookup();
+  lexLook.dbug = 1;
   word = lexLook.randomWord(7);
   word = "mourner";
   lexLook.hq.add("mourned");
