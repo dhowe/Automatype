@@ -25,8 +25,7 @@ function Cursor() {
 
     if (target) {
       var minLength = Math.min(word.length, target.length);
-      while (this.index >= minLength) {
-        console.log('WALKING BACK');
+      while (this.index >= minLength) { // if cursor is past the end of the word
         this.index--;
       }
     }
