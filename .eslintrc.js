@@ -3,7 +3,7 @@ module.exports = {
   rules: {
     'space-after-keywords': 'off',
     'keyword-spacing': ["error", {before: true, after: true}],
-    'max-statements': ['warn', 25],
+    'max-statements': ['warn', 30],
     'curly': ["error", "multi-line"]
   }
 };

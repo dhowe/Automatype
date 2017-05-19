@@ -58,7 +58,7 @@ describe('LexiconLookup', function() {
     });
   });
 
-  describe('#getInsertions(word)', function() {
+  describe.only('#getInsertions(word)', function() {
     it('should return words with size word.length+1', function() {
       var ll = new LexiconLookup(), res;
       res = ll.getInsertions('flak');
@@ -67,6 +67,8 @@ describe('LexiconLookup', function() {
       assert.setEqual(['amaze'], res);
       res = ll.getInsertions('hype');
       assert.setEqual([], res);
+      res = ll.getInsertions('veil');
+      assert.setEqual(['veils'], res);
     });
   });
 
@@ -118,7 +120,7 @@ describe('LexiconLookup', function() {
     });
   });
 
-  describe.only('#mutations(word)', function() {
+  describe('#mutations(word)', function() {
     it('should return closest mutations of input word', function() {
       var ll = new LexiconLookup(), res;
 
@@ -193,11 +195,10 @@ describe('LexiconLookup', function() {
       }
       res = ll.mutations('comment');
       assert.setEqual(['commend'], res);
-
     });
   });
 
-  describe.only('#mutateWord(word)', function() {
+  describe('#mutateWord(word)', function() {
     it('should return a close mutation of input word', function() {
       var ll = new LexiconLookup(), res;
 
