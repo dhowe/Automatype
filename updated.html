@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Automatype</title>
+    <script src="node_modules/p5/lib/p5.js" type="text/javascript"></script>
+    <script src="lib/rita-full.js" type="text/javascript"></script>
+    <script src="lib/rt.js" type="text/javascript"></script>
+    <script src="lookup.js" type="text/javascript"></script>
+    <script>
+
+const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
+var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
+
+var curs, lexLook, word, target, nextAction,
+  maxWordLen = 7, minWordLen = 3, bg = 255, manual = 1;
+
+function setup() {
+
+  createCanvas(680, 490);
+  textFont('courier', 150);
+  textAlign(CENTER, CENTER);
+
+  curs = new Cursor();
+  lexLook = new LexiconLookup();
+  word = lexLook.randomWord(5);
+  console.log(word);
+  step();
+}
+
+function draw() {
+
+  background(bg < 255 ? bg += 4 : bg);
+  text(word, width / 2, height / 2);
+  curs.draw();
+}
+
+function step() {
+
+  if (!target) {
+
+    lexLook.pickNextTarget();
+    curs.findNextEdit();
+    return;
+  }
+
+  if (curs.step())
+    onWordCompletion();
+  else
+    curs.findNextEdit();
+
+  manual || setTimeout(step, 1000);
+}
+
+function onWordCompletion() {
+  target = undefined;
+  manual || (bg = 100);
+}
+
+function keyReleased() {
+
+  if (key===' ') {
+    manual = !manual;
+    if (manual) {
+      step();
+      draw();
+      noLoop();
+    }
+  }
+}
+
+</script>
+  </head>
+  <body>
+  </body>
+</html>
