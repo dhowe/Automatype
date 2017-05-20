@@ -17,6 +17,10 @@ function Cursor() {
     text(this.char, this.offset(), height / 2);
   };
 
+  this.doAction() = function() {
+    word = word.substring(0,curs.index-1) + curs.nextChar + word.substring(curs.index);
+  };
+
   this.offset = function() {
     return width/2 - textWidth(word)/2 + (this.index * this.width);
   };
@@ -149,7 +153,7 @@ function LexiconLookup() {
     if (!next) {
       prob = max(0, word.length - minWordLen) * 0.1;
       //console.log('checking deletions', prob);
-if (false&&Math.random() < prob) {
+      if (Math.random() < prob) {
         nextAction = DELETE_ACTION;
         next = this.getDeletion(word);
         //console.log("DELETE: next="+next+" curr="+word.cursor.index);
@@ -160,7 +164,7 @@ if (false&&Math.random() < prob) {
     if (!next) {
       prob = max(0, maxWordLen - word.length) * 0.1;
       //console.log('checking insertions', prob);
-if (false&&Math.random() < prob) {
+      if (false&&Math.random() < prob) {
         nextAction = INSERT_ACTION;
         next = this.getInsertion(word);
         //console.log("INSERT: "+next);

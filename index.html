@@ -23,7 +23,7 @@ function setup() {
   curs = new Cursor();
   lexLook = new LexiconLookup();
   //lexLook.dbug = 1;
-  word = lexLook.randomWord(7);
+  word = lexLook.randomWord(5);
   console.log('  word='+word);
   step();
 }
@@ -52,10 +52,10 @@ function step() {
   }
   else {
 
-    console.log('step: ', 'current='+curs.index, 'next='+curs.nextPos);
+    //console.log('step: ', 'current='+curs.index, 'next='+curs.nextPos);
 
     if (curs.nextPos < curs.index) {
-      console.log('move left');
+      //console.log('move left');
       curs.index--; // move left
     }
     else if (curs.nextPos > curs.index) {
@@ -64,7 +64,7 @@ function step() {
     }
     else {
       //console.log('replace');
-      word = word.substring(0,curs.index-1) + curs.nextChar + word.substring(curs.index);
+      curs.doAction();
       if (word === target) {
         target = undefined;
         bg = 100;
