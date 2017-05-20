@@ -1,4 +1,5 @@
-var assert = require('assert'), LexiconLookup = require('../lookup');
+var assert = require('assert'),
+  LexiconLookup = require('../lookup').LexiconLookup;
 
 assert.undef = function(a) {
   assert(typeof a === 'undefined');
@@ -58,15 +59,15 @@ describe('LexiconLookup', function() {
     });
   });
 
-  describe.only('#getInsertions(word)', function() {
+  describe('#getInsertions(word)', function() {
     it('should return words with size word.length+1', function() {
       var ll = new LexiconLookup(), res;
       res = ll.getInsertions('flak');
-      assert.setEqual(['flank', 'flask'], res);
+      assert.setEqual(['flank', 'flask', 'flake', 'flaks', 'flaky'], res);
       res = ll.getInsertions('maze');
       assert.setEqual(['amaze'], res);
       res = ll.getInsertions('hype');
-      assert.setEqual([], res);
+      assert.setEqual(['hyped', 'hyper', 'hypes'], res);
       res = ll.getInsertions('veil');
       assert.setEqual(['veils'], res);
     });
@@ -86,13 +87,16 @@ describe('LexiconLookup', function() {
 
   describe('#getInsertion(word)', function() {
     it('should return single words with size word.length+1', function() {
+
       var ll = new LexiconLookup(), res;
       res = ll.getInsertion('flak');
       assert.equal('flank' || 'flask', res);
+
       res = ll.getInsertion('maze');
       assert.equal('amaze', res);
+
       res = ll.getInsertion('hype');
-      assert.undef(res);
+      assert.equal('hyped', res);
 
       ll.hq.add('flank'); // with history
       for (var i = 0; i < 5; i++) {

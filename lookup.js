@@ -1,7 +1,7 @@
 var RiTa, RiLexicon;
 
 if (typeof module != 'undefined') {
-  RiTa = require('rita');
+  RiTa = require('./lib/rita-full');
   RiLexicon = RiTa.RiLexicon;
 }
 
@@ -32,8 +32,6 @@ function Automatype(wordCompleteCallback) {
       typer.findNextEdit();
     }
 
-    //console.log('step: ', 'current='+this.cursor, 'next='+this.nextPos);
-    //
     if (this.nextPos < this.cursor) {
       this.cursor--; // move left
 
@@ -155,7 +153,7 @@ function Automatype(wordCompleteCallback) {
       }
     }
     if (result === '~') {
-      console.warn('TAKING last char!!');
+      //console.warn('TAKING last char!!');
       result = next.charAt(idx);
     }
     this.nextPos = idx;
@@ -176,7 +174,7 @@ function Automatype(wordCompleteCallback) {
     this.nextChar = b;
   };
 
-} // end class
+}
 
 function HistoryQueue(sz) {
   this.q = [];
@@ -281,7 +279,6 @@ function LexiconLookup() {
 
   this.getInsertion = function(input) {
     var result = this.getInsertions(input);
-    // shuffle result ?
     for (var i = 0; i < result.length; i++) {
       if (!this.hq.contains(result[i])) {
         return result[i];
