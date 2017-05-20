@@ -5,6 +5,7 @@ if (typeof module != 'undefined') {
   RiLexicon = RiTa.RiLexicon;
 }
 
+// NEXT:  redo step feature, fix 'cachet' issue
 function Automatype() {
 
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
@@ -15,10 +16,10 @@ function Automatype() {
   this.maxWordLen = 7;
   this.lex = new LexiconLookup();
   this.width = textWidth(this.char);
-  this.word = this.lex.randomWord(round(this.maxWordLen - this.minWordLen/2));
+  this.word = this.lex.randomWord(round
+    (this.minWordLen+(this.maxWordLen - this.minWordLen)/2));
 
-
-  this.word = 'cachet'; // -> cache (for testing)
+  //this.word = 'cachet'; // -> cache (for testing)
 
   console.log(this.word);
 
