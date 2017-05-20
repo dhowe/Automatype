@@ -11,9 +11,9 @@
 
 const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
 
-var typer, bg = 245;
+var typer, bg = 245, test = false;
 
-// TODO: Match visuals exactly to java and add sound
+// TODO: Match visuals exactly to java and add sound (use spacebar to do one step at a time)
 
 function setup() {
 
@@ -21,7 +21,7 @@ function setup() {
   textFont('courier', 150);
   textAlign(CENTER, CENTER);
 
-  typer = new Automatype();
+  typer = new Automatype(onWordComplete);
   next();
 }
 
@@ -29,12 +29,26 @@ function draw() {
 
   background(bg < 245 ? bg += 4 : bg);
   typer.draw();
+  test && noLoop();
 }
 
 function next() {
 
   typer.step();
-  setTimeout(next, 1000);
+  !test && setTimeout(next, 800);
+}
+
+function onWordComplete() {
+  !test && (bg = 0);
+}
+
+function keyReleased() {
+
+  if (key===' '){
+    test = true;
+    next();
+    draw();
+  }
 }
 
 

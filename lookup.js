@@ -5,8 +5,7 @@ if (typeof module != 'undefined') {
   RiLexicon = RiTa.RiLexicon;
 }
 
-// NEXT:  redo step feature, fix 'cachet' issue
-function Automatype() {
+function Automatype(wordCompleteCallback) {
 
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
@@ -18,8 +17,6 @@ function Automatype() {
   this.width = textWidth(this.char);
   this.word = this.lex.randomWord(round
     (this.minWordLen+(this.maxWordLen - this.minWordLen)/2));
-
-  //this.word = 'cachet'; // -> cache (for testing)
 
   console.log(this.word);
 
@@ -33,25 +30,21 @@ function Automatype() {
     if (!this.target) {
       typer.pickNextTarget();
       typer.findNextEdit();
-      return;
     }
 
     //console.log('step: ', 'current='+this.cursor, 'next='+this.nextPos);
+    //
     if (this.nextPos < this.cursor) {
-      //console.log('move left');
       this.cursor--; // move left
 
     } else if (this.nextPos > this.cursor) {
-      //console.log('move right');
       this.cursor++; // move right
 
     } else {
-
-      //console.log('replace');
       this.doAction();
       if (this.word === this.target) {
         this.target = undefined;
-        bg = 100;
+        wordCompleteCallback();
       } else {
         this.findNextEdit();
       }
@@ -64,6 +57,9 @@ function Automatype() {
       case DELETE_ACTION:
         this.word = this.word.substring(0, this.cursor - 1) +
           this.word.substring(this.cursor);
+        if (this.cursor > this.word.length) {
+          this.cursor--;
+        }
         break;
       case INSERT_ACTION:
         this.word = this.word.substring(0, this.cursor) +
@@ -178,8 +174,6 @@ function Automatype() {
     }
     this.nextPos = cursIdx + 1;
     this.nextChar = b;
-    //console.log('positionForReplace', this.nextChar,
-      //'current='+cursIdx, 'next='+this.nextPos);
   };
 
 } // end class
