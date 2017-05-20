@@ -12,7 +12,11 @@
 const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
 var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
-var curs, lexLook, word, target, nextAction, maxWordLen = 7, minWordLen = 3, bg = 245;
+var typer, lexLook, word, target, nextAction, maxWordLen = 7, minWordLen = 3, bg = 245;
+
+// TODO:
+//   Match visuals to java
+//   Add sound
 
 function setup() {
 
@@ -20,10 +24,7 @@ function setup() {
   textFont('courier', 150);
   textAlign(CENTER, CENTER);
 
-  curs = new Cursor();
-  lexLook = new LexiconLookup();
-  //lexLook.dbug = 1;
-  word = lexLook.randomWord(5);
+  typer = new Automatype();
   console.log('  word='+word);
   step();
 }
@@ -32,7 +33,7 @@ function draw() {
 
   background(bg<245?bg+=5:bg);
   text(word, width / 2, height / 2);
-  curs.draw();
+  typer.draw();
 }
 
 function keyReleased() {
@@ -47,32 +48,12 @@ function step() {
 
   if (!target) {
 
-    lexLook.pickNextTarget();
-    curs.findNextEdit();
+    typer.pickNextTarget();
+    typer.findNextEdit();
   }
   else {
 
-    //console.log('step: ', 'current='+curs.index, 'next='+curs.nextPos);
-
-    if (curs.nextPos < curs.index) {
-      //console.log('move left');
-      curs.index--; // move left
-    }
-    else if (curs.nextPos > curs.index) {
-      //console.log('move right');
-      curs.index++; // move right
-    }
-    else {
-      //console.log('replace');
-      curs.doAction();
-      if (word === target) {
-        target = undefined;
-        bg = 100;
-      }
-      else {
-        curs.findNextEdit();
-      }
-    }
+    typer.step();
   }
   setTimeout(step, 1000);
 }

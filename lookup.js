@@ -5,32 +5,109 @@ if (typeof module != 'undefined') {
   RiLexicon = RiTa.RiLexicon;
 }
 
-function Cursor() {
+function Automatype() {
 
   this.char = '|';
-  this.index = 3;
-  this.nextChar = undefined;
-  this.nextPos = undefined;
+  this.cursor = 3;
+  this.lex = new LexiconLookup();
   this.width = textWidth(this.char);
+
+  word = this.lex.randomWord(Math.round(maxWordLen - minWordLen/2));
 
   this.draw = function() {
     text(this.char, this.offset(), height / 2);
   };
 
-  this.doAction() = function() {
-    word = word.substring(0,curs.index-1) + curs.nextChar + word.substring(curs.index);
+  this.step = function() {
+
+    //console.log('step: ', 'current='+this.cursor, 'next='+this.nextPos);
+    if (this.nextPos < this.cursor) {
+      //console.log('move left');
+      this.cursor--; // move left
+
+    } else if (this.nextPos > this.cursor) {
+      //console.log('move right');
+      this.cursor++; // move right
+
+    } else {
+
+      //console.log('replace');
+      this.doAction();
+      if (word === target) {
+        target = undefined;
+        bg = 100;
+      } else {
+        this.findNextEdit();
+      }
+    }
+  };
+
+  this.doAction = function() {
+
+    switch (nextAction) {
+      case DELETE_ACTION:
+        word = word.substring(0, this.cursor - 1) +
+          word.substring(this.cursor);
+        break;
+      case INSERT_ACTION:
+        word = word.substring(0, this.cursor) +
+          this.nextChar + word.substring(this.cursor);
+        break;
+      default:  // REPLACE
+        word = word.substring(0, this.cursor - 1) +
+          this.nextChar + word.substring(this.cursor);
+    }
   };
 
   this.offset = function() {
-    return width/2 - textWidth(word)/2 + (this.index * this.width);
+
+    return width/2 - textWidth(word)/2 + (this.cursor * this.width);
+  };
+
+  this.pickNextTarget = function() {
+
+    var next, prob;
+
+    // try deletions
+    if (!next) {
+      prob = max(0, word.length - minWordLen) * 0.1;
+      if (Math.random() < prob) {
+        nextAction = DELETE_ACTION;
+        next = this.lex.getDeletion(word);
+        //next && console.log('DELETE');
+      }
+    }
+
+    // try insertions
+    if (!next) {
+      prob = max(0, maxWordLen - word.length) * 0.1;
+      if (Math.random() < prob) {
+        nextAction = INSERT_ACTION;
+        next = this.lex.getInsertion(word);
+        //next && console.log('INSERT');
+      }
+    }
+
+    // try mutations
+    if (!next) {
+      nextAction = REPLACE_ACTION; // is this always true??
+      next = this.lex.mutateWord(word);
+    }
+
+    // add to hq and set target text
+    this.lex.addToHistory(next);
+    target = next;
+
+    console.log(target+'('+RiTa.minEditDistance(word, target)+')');
   };
 
   this.findNextEdit = function() {
 
     if (target) {
       var minLength = Math.min(word.length, target.length);
-      while (this.index >= minLength) { // if cursor is past the end of the word
-        this.index--;
+      while (this.cursor >= minLength) { // if cursor is past end of word
+        console.log('WALK BACK');
+        this.cursor--;
       }
     }
 
@@ -39,7 +116,7 @@ function Cursor() {
     } else if (word.length === target.length - 1) { // insert
       this.positionForInsert(word, target);
     } else {
-      this.positionForReplace(this.index, word, target); // replace
+      this.positionForReplace(this.cursor, word, target); // replace
     }
   };
 
@@ -143,45 +220,6 @@ function LexiconLookup() {
 
   this.addToHistory = function(word) {
     this.hq.add(word);
-  };
-
-  this.pickNextTarget = function() {
-
-    var next, prob;
-
-    // try deletions
-    if (!next) {
-      prob = max(0, word.length - minWordLen) * 0.1;
-      //console.log('checking deletions', prob);
-      if (Math.random() < prob) {
-        nextAction = DELETE_ACTION;
-        next = this.getDeletion(word);
-        //console.log("DELETE: next="+next+" curr="+word.cursor.index);
-      }
-    }
-
-    // try insertions
-    if (!next) {
-      prob = max(0, maxWordLen - word.length) * 0.1;
-      //console.log('checking insertions', prob);
-      if (false&&Math.random() < prob) {
-        nextAction = INSERT_ACTION;
-        next = this.getInsertion(word);
-        //console.log("INSERT: "+next);
-      }
-    }
-
-    // try mutations
-    if (!next) {
-      nextAction = REPLACE_ACTION; // is this always true??
-      next = this.mutateWord(word);
-    }
-
-    // add to hq and set target text
-    this.addToHistory(next);
-    target = next;
-
-    console.log('TARGET: '+target, RiTa.minEditDistance(word, target));
   };
 
   this.randomWord = function(len) {
@@ -321,5 +359,5 @@ function LexiconLookup() {
 
 if (typeof module != 'undefined' && module.exports) {
   module.exports.LexiconLookup = LexiconLookup;
-  module.exports.Cursor = Cursor;
+  module.exports.Automatype = Automatype;
 }
