@@ -148,8 +148,8 @@ function LexiconLookup() {
     // try deletions
     if (!next) {
       prob = max(0, word.length - minWordLen) * 0.1;
-      //console.log('checking deletions', prob);
-if (false&&Math.random() < prob) {
+      console.log('checking deletions', prob);
+      if (1||Math.random() < prob) {
         nextAction = DELETE_ACTION;
         next = this.getDeletion(word);
         //console.log("DELETE: next="+next+" curr="+word.cursor.index);
@@ -159,8 +159,8 @@ if (false&&Math.random() < prob) {
     // try insertions
     if (!next) {
       prob = max(0, maxWordLen - word.length) * 0.1;
-      //console.log('checking insertions', prob);
-if (false&&Math.random() < prob) {
+      console.log('checking insertions', prob);
+      if (Math.random() < prob) {
         nextAction = INSERT_ACTION;
         next = this.getInsertion(word);
         //console.log("INSERT: "+next);
