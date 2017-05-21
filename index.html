@@ -4,28 +4,33 @@
     <meta charset="UTF-8">
     <title>Automatype</title>
     <script src="node_modules/p5/lib/p5.js" type="text/javascript"></script>
+    <script src="node_modules/p5/lib/addons/p5.sound.js" type="text/javascript"></script>
     <script src="lib/rita-full.js" type="text/javascript"></script>
     <script src="lookup.js" type="text/javascript"></script>
     <script>
 
-const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
+const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8, TEXT_SIZE = 150;
 
 var typer, bg = 245, test = false;
+var bell, type; 
 
-// TODO: Match visuals exactly to java and add sound (use spacebar to do one step at a time)
+function preload() {
+  bell = loadSound("res/bell.wav");
+  type = loadSound("res/key.wav");
+}
 
 function setup() {
 
   createCanvas(680, 490);
-  textFont('courier', 150);
+  textFont('courier', TEXT_SIZE);
   textAlign(CENTER, CENTER);
 
   typer = new Automatype(onWordComplete);
   next();
+
 }
 
 function draw() {
-
   background(bg < 245 ? bg += 4 : bg);
   typer.draw();
   test && noLoop();
@@ -34,11 +39,12 @@ function draw() {
 function next() {
 
   typer.step();
-  !test && setTimeout(next, 800);
+  !test && setTimeout(next, 1000);
 }
 
 function onWordComplete() {
   !test && (bg = 0);
+  bell.play();
 }
 
 function keyReleased() {
