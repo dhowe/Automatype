@@ -26,7 +26,6 @@ function setup() {
   textAlign(CENTER, CENTER);
 
   typer = new Automatype(onWordComplete);
-  pause = INITIAL_KEY_PAUSE;
   next();
 }
 
@@ -41,12 +40,14 @@ function draw() {
 function next() {
 
   typer.step();
-  !test && setTimeout(next, pause * 1000);
+  !test && setTimeout(next, SUCCESS_PAUSE * 1000);
 }
 
 function onWordComplete() {
-  !test && (bg = 0);
-  textColor = 255;
+  if (!test) {
+    bg = 0;
+    textColor = 255;
+  } 
   bell.play();
 }
 
@@ -54,6 +55,7 @@ function keyReleased() {
 
   if (key===' '){
     test = 1;
+    textColor = 0;
     next();
     draw();
   }

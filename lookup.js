@@ -24,8 +24,8 @@ function Automatype(wordCompleteCallback) {
   this.draw = function() {
 
     text(this.word, width / 2, height / 2);
-    cursorVisible = (millis() - this.cursorLastMove) % 800 < 400 ? true : false; // blink
-    
+    cursorVisible = (millis() - this.cursorLastMove) % 800 < 400 ?
+                     true : false; // blink
     if (this.highlight) {
 
       noStroke();
