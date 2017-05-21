@@ -9,15 +9,15 @@ function Automatype(wordCompleteCallback) {
 
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
-  this.char = '|';
-  this.showSelectionRect = false;
-  this.readyForReplace = false;
+  //this.readyForReplace = false; // TODO: remove?
+
   this.cursor = 3;
   this.minWordLen = 3;
   this.maxWordLen = 7;
+  this.highlight = false;
   this.lex = new LexiconLookup();
-  this.width = textWidth(this.char);
-  this.height = TEXT_SIZE; // textHeight ?
+  this.cursorWidth = textWidth('|');
+  this.cursorHeight = textAscent() + textDescent();
   this.word = this.lex.randomWord(round
     (this.minWordLen+(this.maxWordLen - this.minWordLen)/2));
 
@@ -25,14 +25,18 @@ function Automatype(wordCompleteCallback) {
 
   this.draw = function() {
     text(this.word, width / 2, height / 2);
-    text(this.char, this.offset(), height / 2);
 
-    if (this.showSelectionRect) {
+    if (this.highlight) {
+
       noStroke();
       fill(0, 0, 200, 32);
-      rect(this.offset() + 4, height/2 - this.height/2 + 10,
-        this.width, this.height);
+      rect(this.offset(), height/2 - this.cursorHeight/2,
+        -this.cursorWidth, this.cursorHeight);
       fill(0,0,0);
+
+    } else {
+
+      text('|', this.offset(), height / 2); // fix to #7
     }
   };
 
@@ -43,27 +47,39 @@ function Automatype(wordCompleteCallback) {
     }
 
     if (this.nextPos < this.cursor) {
+
       this.cursor--; // move left
-      this.showSelectionRect = false;
+      this.highlight = false;
+      type.play(); // #17
+
     } else if (this.nextPos > this.cursor) {
+
       this.cursor++; // move right
-      this.showSelectionRect = false;
-    } else if (!this.readyForReplace) {
-      this.readyForReplace = true;
-      this.showSelectionRect = true;
+      this.highlight = false;
+      type.play(); // #17
+
+    } else if (!this.highlight && this.nextAction === REPLACE_ACTION) {
+
+      this.highlight = true;  // fix to #8, #3
+      return; // no type sound, only highlight
+
     } else {
-      this.readyForReplace = false;
-      this.showSelectionRect = false;
+
+      //this.readyForReplace = false;
+      this.highlight = false;
       this.doAction();
+
       if (this.word === this.target) {
         this.target = undefined;
         wordCompleteCallback();
+
       } else {
+
         this.findNextEdit();
       }
     }
 
-    type.play();
+
   };
 
   this.doAction = function() {
@@ -72,7 +88,7 @@ function Automatype(wordCompleteCallback) {
       case DELETE_ACTION:
         this.word = this.word.substring(0, this.cursor - 1) +
           this.word.substring(this.cursor);
-        if (this.cursor > this.word.length) {
+        if (this.cursor > this.word.length) { // fix to #5
           this.cursor--;
         }
         break;
@@ -89,7 +105,7 @@ function Automatype(wordCompleteCallback) {
 
   this.offset = function() {
 
-    return width/2 - textWidth(this.word)/2 + ((this.cursor-1) * this.width);
+    return width/2 - textWidth(this.word)/2 + (this.cursor * this.cursorWidth);
   };
 
   this.pickNextTarget = function() {
@@ -98,7 +114,7 @@ function Automatype(wordCompleteCallback) {
 
     // try deletions
     if (!result) {
-      prob = max(0, this.word.length - this.minWordLen) * 0.1;
+      prob = max(0, this.word.length - this.minWordLen) * 0.2;
       if (Math.random() < prob) {
         this.nextAction = DELETE_ACTION;
         result = this.lex.getDeletion(this.word);
@@ -108,7 +124,7 @@ function Automatype(wordCompleteCallback) {
 
     // try insertions
     if (!result) {
-      prob = max(0, this.maxWordLen - this.word.length) * 0.1;
+      prob = max(0, this.maxWordLen - this.word.length) * 0.2;
       if (Math.random() < prob) {
         this.nextAction = INSERT_ACTION;
         result = this.lex.getInsertion(this.word);
