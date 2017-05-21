@@ -11,7 +11,7 @@
 
 const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
 
-var typer, bg = 245, test = 0;
+var typer, bg = 245, textColor = 0, test = 0;
 var bell, type;
 
 function preload() {
@@ -26,11 +26,14 @@ function setup() {
   textAlign(CENTER, CENTER);
 
   typer = new Automatype(onWordComplete);
+  pause = INITIAL_KEY_PAUSE;
   next();
 }
 
 function draw() {
   background(bg < 245 ? bg += 4 : bg);
+  textColor > 0 ? textColor -= 4 : 0;
+  fill(textColor);
   typer.draw();
   test && noLoop();
 }
@@ -38,11 +41,12 @@ function draw() {
 function next() {
 
   typer.step();
-  !test && setTimeout(next, 800);
+  !test && setTimeout(next, pause * 1000);
 }
 
 function onWordComplete() {
   !test && (bg = 0);
+  textColor = 255;
   bell.play();
 }
 
