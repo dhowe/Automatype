@@ -32,7 +32,7 @@ function Automatype(wordCompleteCallback) {
       fill(0, 0, 200, 32);
       rect(this.offset(), height/2 - this.cursorHeight/2,
         -this.cursorWidth, this.cursorHeight);
-      fill(textColor);
+      fill(255 - bg);
 
     } else {
       if (cursorVisible) text('|', this.offset(), height / 2); // fix to #7

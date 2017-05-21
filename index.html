@@ -11,7 +11,7 @@
 
 const INITIAL_KEY_PAUSE = 0.8, REPLACE_PAUSE = 1.6, SUCCESS_PAUSE = 0.8;
 
-var typer, bg = 245, textColor = 0, test = 0;
+var typer, bg = 245, test = 0;
 var bell, type;
 
 function preload() {
@@ -31,8 +31,7 @@ function setup() {
 
 function draw() {
   background(bg < 245 ? bg += 4 : bg);
-  textColor > 0 ? textColor -= 4 : 0;
-  fill(textColor);
+  fill(255 - bg);
   typer.draw();
   test && noLoop();
 }
@@ -44,10 +43,7 @@ function next() {
 }
 
 function onWordComplete() {
-  if (!test) {
-    bg = 0;
-    textColor = 255;
-  } 
+  !test && (bg = 0);
   bell.play();
 }
 
@@ -55,7 +51,6 @@ function keyReleased() {
 
   if (key===' '){
     test = 1;
-    textColor = 0;
     next();
     draw();
   }
