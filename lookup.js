@@ -10,11 +10,14 @@ function Automatype(wordCompleteCallback) {
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
   this.char = '|';
+  this.showSelectionRect = false;
+  this.readyForReplace = false;
   this.cursor = 3;
   this.minWordLen = 3;
   this.maxWordLen = 7;
   this.lex = new LexiconLookup();
   this.width = textWidth(this.char);
+  this.height = TEXT_SIZE; // textHeight ?
   this.word = this.lex.randomWord(round
     (this.minWordLen+(this.maxWordLen - this.minWordLen)/2));
 
@@ -23,10 +26,17 @@ function Automatype(wordCompleteCallback) {
   this.draw = function() {
     text(this.word, width / 2, height / 2);
     text(this.char, this.offset(), height / 2);
+
+    if (this.showSelectionRect) {
+      noStroke();
+      fill(0, 0, 200, 32);
+      rect(this.offset() + 4, height/2 - this.height/2 + 10,
+        this.width, this.height);
+      fill(0,0,0);
+    }
   };
 
   this.step = function() {
-
     if (!this.target) {
       typer.pickNextTarget();
       typer.findNextEdit();
@@ -34,11 +44,16 @@ function Automatype(wordCompleteCallback) {
 
     if (this.nextPos < this.cursor) {
       this.cursor--; // move left
-
+      this.showSelectionRect = false;
     } else if (this.nextPos > this.cursor) {
       this.cursor++; // move right
-
+      this.showSelectionRect = false;
+    } else if (!this.readyForReplace) {
+      this.readyForReplace = true;
+      this.showSelectionRect = true;
     } else {
+      this.readyForReplace = false;
+      this.showSelectionRect = false;
       this.doAction();
       if (this.word === this.target) {
         this.target = undefined;
@@ -47,6 +62,8 @@ function Automatype(wordCompleteCallback) {
         this.findNextEdit();
       }
     }
+
+    type.play();
   };
 
   this.doAction = function() {
@@ -71,7 +88,7 @@ function Automatype(wordCompleteCallback) {
 
   this.offset = function() {
 
-    return width/2 - textWidth(this.word)/2 + (this.cursor * this.width);
+    return width/2 - textWidth(this.word)/2 + ((this.cursor-1) * this.width);
   };
 
   this.pickNextTarget = function() {
@@ -110,16 +127,17 @@ function Automatype(wordCompleteCallback) {
 
     console.log(this.target +'('+RiTa.minEditDistance
       (this.word, this.target)+')');
+
   };
 
   this.findNextEdit = function() {
-
     if (this.target) {
       var minLength = Math.min(this.word.length, this.target.length);
       while (this.cursor >= minLength) { // if cursor is past end of this.word
         //console.log('WALK BACK');
         this.cursor--;
       }
+
     }
 
     if (this.word.length === this.target.length + 1) {      // delete
@@ -173,7 +191,6 @@ function Automatype(wordCompleteCallback) {
     this.nextPos = cursIdx + 1;
     this.nextChar = b;
   };
-
 }
 
 function HistoryQueue(sz) {
