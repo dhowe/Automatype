@@ -83,6 +83,7 @@ function Automatype(wordCompleteCallback) {
       default:  // REPLACE
         this.word = this.word.substring(0, this.cursor - 1) +
           this.nextChar + this.word.substring(this.cursor);
+        this.cursor++;
     }
   };
 
