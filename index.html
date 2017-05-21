@@ -31,7 +31,6 @@ function setup() {
 
 function draw() {
   background(bg < 245 ? bg += 4 : bg);
-  fill(255 - bg);
   typer.draw();
   test && noLoop();
 }
@@ -39,7 +38,7 @@ function draw() {
 function next() {
 
   typer.step();
-  !test && setTimeout(next, SUCCESS_PAUSE * 1000);
+  !test && setTimeout(next, 800);
 }
 
 function onWordComplete() {
