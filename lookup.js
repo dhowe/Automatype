@@ -24,7 +24,10 @@ function Automatype(wordCompleteCallback) {
   console.log(this.word);
 
   this.draw = function() {
+    fill(255 - bg);
     text(this.word, width / 2, height / 2);
+    cursorVisible = (millis() - this.cursorLastMove) % 800 < 400 ?
+                    true : false; // blink
 
     if (this.highlight) {
 
@@ -32,15 +35,16 @@ function Automatype(wordCompleteCallback) {
       fill(0, 0, 200, 32);
       rect(this.offset(), height/2 - this.cursorHeight/2,
         -this.cursorWidth, this.cursorHeight);
-      fill(0,0,0);
 
     } else {
 
-      text('|', this.offset(), height / 2); // fix to #7
+      if (cursorVisible) text('|', this.offset(), height / 2); // fix to #7
     }
   };
 
   this.step = function() {
+    this.cursorLastMove = millis();
+
     if (!this.target) {
       typer.pickNextTarget();
       typer.findNextEdit();
@@ -95,11 +99,11 @@ function Automatype(wordCompleteCallback) {
       case INSERT_ACTION:
         this.word = this.word.substring(0, this.cursor) +
           this.nextChar + this.word.substring(this.cursor);
+        this.cursor++;
         break;
       default:  // REPLACE
         this.word = this.word.substring(0, this.cursor - 1) +
           this.nextChar + this.word.substring(this.cursor);
-        this.cursor++;
     }
   };
 
