@@ -9,8 +9,6 @@ function Automatype(wordCompleteCallback) {
 
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
-  //this.readyForReplace = false; // TODO: remove?
-
   this.cursor = 3;
   this.minWordLen = 3;
   this.maxWordLen = 7;
@@ -26,8 +24,6 @@ function Automatype(wordCompleteCallback) {
   this.draw = function() {
     fill(255 - bg);
     text(this.word, width / 2, height / 2);
-    cursorVisible = (millis() - this.cursorLastMove) % 800 < 400 ?
-                    true : false; // blink
 
     if (this.highlight) {
 
@@ -38,7 +34,10 @@ function Automatype(wordCompleteCallback) {
 
     } else {
 
-      if (cursorVisible) text('|', this.offset(), height / 2); // fix to #7
+      if ((millis() - this.cursorLastMove) % 800 < 400) {
+        fill(0);
+        text('|', this.offset(), height / 2); // fix to #7
+      }
     }
   };
 
@@ -69,11 +68,11 @@ function Automatype(wordCompleteCallback) {
 
     } else {
 
-      //this.readyForReplace = false;
       this.highlight = false;
       this.doAction();
 
       if (this.word === this.target) {
+
         this.target = undefined;
         wordCompleteCallback();
 
@@ -82,8 +81,6 @@ function Automatype(wordCompleteCallback) {
         this.findNextEdit();
       }
     }
-
-
   };
 
   this.doAction = function() {
@@ -101,9 +98,10 @@ function Automatype(wordCompleteCallback) {
           this.nextChar + this.word.substring(this.cursor);
         this.cursor++;
         break;
-      default:  // REPLACE
+      case REPLACE_ACTION:
         this.word = this.word.substring(0, this.cursor - 1) +
           this.nextChar + this.word.substring(this.cursor);
+        break;
     }
   };
 
@@ -118,21 +116,19 @@ function Automatype(wordCompleteCallback) {
 
     // try deletions
     if (!result) {
-      prob = max(0, this.word.length - this.minWordLen) * 0.2;
+      prob = max(0, this.word.length - this.minWordLen) * 0.1;
       if (Math.random() < prob) {
         this.nextAction = DELETE_ACTION;
         result = this.lex.getDeletion(this.word);
-        //result && console.log('DELETE');
       }
     }
 
     // try insertions
     if (!result) {
-      prob = max(0, this.maxWordLen - this.word.length) * 0.2;
+      prob = max(0, this.maxWordLen - this.word.length) * 0.1;
       if (Math.random() < prob) {
         this.nextAction = INSERT_ACTION;
         result = this.lex.getInsertion(this.word);
-        //result && console.log('INSERT');
       }
     }
 
@@ -154,13 +150,10 @@ function Automatype(wordCompleteCallback) {
   this.findNextEdit = function() {
     if (this.target) {
       var minLength = Math.min(this.word.length, this.target.length);
-      while (this.cursor >= minLength) { // if cursor is past end of this.word
-        //console.log('WALK BACK');
+      while (this.cursor >= minLength) { // if cursor is past end of word
         this.cursor--;
       }
-
     }
-
     if (this.word.length === this.target.length + 1) {      // delete
       this.positionForDelete(this.word, this.target);
     } else if (this.word.length === this.target.length - 1) { // insert
@@ -401,7 +394,7 @@ function LexiconLookup() {
       : fail(this, '8. *** fail->random(' + input + '):');
   };
 
-} // end class
+}
 
 if (typeof module != 'undefined' && module.exports) {
   module.exports.LexiconLookup = LexiconLookup;
