@@ -1,5 +1,5 @@
 var assert = require('assert'),
-  LexiconLookup = require('../lookup').LexiconLookup;
+  LexiconLookup = require('../automatype').LexiconLookup;
 
 assert.undef = function(a) {
   assert(typeof a === 'undefined');
