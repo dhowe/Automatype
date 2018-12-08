@@ -16,10 +16,10 @@ function Automatype(wordCompleteCallback) {
   this.lex = new LexiconLookup();
   this.cursorWidth = textWidth('|');
   this.cursorHeight = textAscent() + textDescent();
-  this.word = this.lex.randomWord(round
+  this.word = this.lex.randomWord(Math.round
     (this.minWordLen+(this.maxWordLen - this.minWordLen)/2));
 
-  console.log(this.word);
+  //console.log(this.word);
 
   this.draw = function() {
     fill(255 - bg);
@@ -53,13 +53,15 @@ function Automatype(wordCompleteCallback) {
 
       this.cursor--; // move left
       this.highlight = false;
-      type.play(); // #17
+      //type.play(); // #17
+      onActionComplete();
 
     } else if (this.nextPos > this.cursor) {
 
       this.cursor++; // move right
       this.highlight = false;
-      type.play(); // #17
+      //type.play(); // #17
+      onActionComplete();
 
     } else if (!this.highlight && this.nextAction === REPLACE_ACTION) {
 
@@ -74,7 +76,7 @@ function Automatype(wordCompleteCallback) {
       if (this.word === this.target) {
 
         this.target = undefined;
-        wordCompleteCallback();
+        onActionComplete(this.word);
 
       } else {
 
@@ -116,7 +118,7 @@ function Automatype(wordCompleteCallback) {
 
     // try deletions
     if (!result) {
-      prob = max(0, this.word.length - this.minWordLen) * 0.1;
+      prob = Math.max(0, this.word.length - this.minWordLen) * 0.1;
       if (Math.random() < prob) {
         this.nextAction = DELETE_ACTION;
         result = this.lex.getDeletion(this.word);
@@ -125,7 +127,7 @@ function Automatype(wordCompleteCallback) {
 
     // try insertions
     if (!result) {
-      prob = max(0, this.maxWordLen - this.word.length) * 0.1;
+      prob = Math.max(0, this.maxWordLen - this.word.length) * 0.1;
       if (Math.random() < prob) {
         this.nextAction = INSERT_ACTION;
         result = this.lex.getInsertion(this.word);
@@ -142,9 +144,7 @@ function Automatype(wordCompleteCallback) {
     this.lex.addToHistory(result);
     this.target = result;
 
-    console.log(this.target +'('+RiTa.minEditDistance
-      (this.word, this.target)+')');
-
+    //console.log(this.target +'('+RiTa.minEditDistance(this.word, this.target)+')');
   };
 
   this.findNextEdit = function() {

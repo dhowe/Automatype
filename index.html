@@ -22,7 +22,7 @@ function setup() {
   textFont('courier', 150);
   textAlign(CENTER, CENTER);
 
-  typer = new Automatype(onWordComplete);
+  typer = new Automatype(onActionComplete);
   next();
 }
 
@@ -39,9 +39,14 @@ function next() {
   !test && setTimeout(next, random(500,1200));
 }
 
-function onWordComplete() {
-  !test && (bg = 0);
-  bell.play();
+function onActionComplete(word) {
+  if (word) {
+    !test && (bg = 0);
+    bell.play();
+  }
+  else {
+      type.play();
+  }
 }
 
 function keyReleased() { // tmp
