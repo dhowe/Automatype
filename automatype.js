@@ -1,6 +1,6 @@
 var RiTa, RiLexicon;
 
-if (typeof module != 'undefined') {
+if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
   RiTa = require('./lib/rita-full');
   RiLexicon = RiTa.RiLexicon;
 }

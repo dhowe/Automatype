@@ -1,6 +1,5 @@
 let Automatype = require('./automatype').Automatype;
 
-
 // TODO: next create nodes(if not exists)/links(from last->word) ??
 //       check data-viz package first (gephi)
 
