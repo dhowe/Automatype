@@ -1,5 +1,10 @@
 var RiTa, RiLexicon;
 
+// NEXT:
+// Verify random slection in delete/mutate
+// Rerun writeNodeList, then writeLiveEdges
+// IF ok, then run writeAllMeds[1,2,3]
+
 if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
   RiTa = require('rita');
   RiLexicon = RiTa.RiLexicon;
