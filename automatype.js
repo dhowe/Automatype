@@ -10,6 +10,7 @@ function Automatype(wordCompleteCallback) {
   var REPLACE_ACTION = 1, DELETE_ACTION = 2, INSERT_ACTION = 3;
 
   this.cursor = 3;
+  this.lastMed = -1;
   this.minWordLen = 3;
   this.maxWordLen = 7;
   this.highlight = false;
@@ -76,7 +77,7 @@ function Automatype(wordCompleteCallback) {
       if (this.word === this.target) {
 
         this.target = undefined;
-        onActionComplete(this.word);
+        onActionComplete(this.word, this.lastMed);
 
       } else {
 
@@ -142,6 +143,9 @@ function Automatype(wordCompleteCallback) {
 
     // add to hq and set this.target text
     this.lex.addToHistory(result);
+
+    if (this.word) this.lastMed = RiTa.minEditDistance(this.word, result);
+
     this.target = result;
 
     //console.log(this.target +'('+RiTa.minEditDistance(this.word, this.target)+')');
@@ -253,7 +257,7 @@ function HistoryQueue(sz) {
 
 function LexiconLookup() {
 
-  this.dbug = false;
+  this.dbug = 0;
   this.lex = new RiLexicon();
   this.hq = new HistoryQueue(20);
   this.minHistorySize = 10;
@@ -329,14 +333,12 @@ function LexiconLookup() {
   // e. pick random
   this.mutations = function(input) {
     var result,
-      dbug = this.dbug,
       med = 1,
+      dbug = this.dbug,
       history = this.hq,
       tmp = this.lex.similarByLetter(input, med, true);
 
-    var notInHistory = function(w) {
-      return !history.contains(w);
-    };
+    var notInHistory = function(w) { return !history.contains(w) };
 
     var fail = function(ll, m) {
       console.error(
@@ -384,13 +386,13 @@ function LexiconLookup() {
     }
 
     if (!result.length) {
-      // give up, print warning, pick a random input -- needed ??
+      // allow words of different length
       result = this.lex.similarByLetter(input, med, false).filter(notInHistory);
       console.log('7. Any-length(' + input + '): ', result);
     }
 
     return result.length
-      ? result.sort(medShuffle)
+      ? result.sort(medShuffle) // give up, print warning, pick random
       : fail(this, '8. *** fail->random(' + input + '):');
   };
 

@@ -39,7 +39,7 @@ function next() {
   !test && setTimeout(next, random(500,1200));
 }
 
-function onActionComplete(word) {
+function onActionComplete(word, med) {
   if (word) {
     !test && (bg = 0);
     bell.play();
