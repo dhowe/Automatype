@@ -270,8 +270,8 @@ function HistoryQueue(sz) {
 function LexiconLookup() {
 
   this.dbug = 0;
-  this.lex = new RiLexicon();
   this.hq = new HistoryQueue(20);
+  this.rlex = new RiLexicon();
   this.minHistorySize = 10;
 
   this.addToHistory = function (w) {
@@ -280,9 +280,9 @@ function LexiconLookup() {
 
   this.randomWord = function (len) {
     // TODO: fix me
-    var w = this.lex.randomWord();
+    var w = this.rlex.randomWord();
     while (w.length !== len) {
-      w = this.lex.randomWord();
+      w = this.rlex.randomWord();
     }
     this.addToHistory(w); // ?
     return w;
@@ -304,7 +304,7 @@ function LexiconLookup() {
     for (var i = 0; i < len; i++) {
       var pre = input.substring(0, i),
         post = input.substring(i + 1);
-      if (this.lex.containsWord(pre + post)) {
+      if (this.rlex.containsWord(pre + post)) {
         result.push(pre + post);
       }
     }
@@ -320,9 +320,14 @@ function LexiconLookup() {
       for (var j = 0; j < 26; j++) {
         var sub = String.fromCharCode(j + 97);
         var test = pre + sub + post;
-        if (this.lex.containsWord(test)) {
-          result.push(test);
+        if (this.rlex.containsWord(test)) {
+          if (sub != 's' || post.length > 0) {
+            result.push(test);
+          }
+          else
+            console.log("SKIP", test, pre, sub, post);
         }
+
       }
     }
     return result;
@@ -330,9 +335,11 @@ function LexiconLookup() {
 
   this.getInsertion = function (input) {
     var result = this.getInsertions(input);
-    for (var i = 0; i < result.length; i++) {
-      if (!this.hq.contains(result[i])) {
-        return result[i];
+    var start = Math.floor(Math.random()*result.length);
+    for (var i = start; i < result.length+start; i++) {
+      var idx = i % result.length;
+      if (!this.hq.contains(result[idx])) {
+        return result[idx];
       }
     }
   };
@@ -352,7 +359,7 @@ function LexiconLookup() {
       med = 1,
       dbug = this.dbug,
       history = this.hq,
-      tmp = this.lex.similarByLetter(input, med, true);
+      tmp = this.rlex.similarByLetter(input, med, true);
 
     var notInHistory = function (w) { return !history.contains(w) };
 
@@ -393,7 +400,7 @@ function LexiconLookup() {
 
     // no result, relax our med constraints until we find something
     while (!result.length && med < input.length) {
-      tmp = this.lex.similarByLetter(input, ++med, true);
+      tmp = this.rlex.similarByLetter(input, ++med, true);
       dbug && console.log('5. Relaxing(' + input + ')(' + med + ') ->', tmp);
       if (tmp.length) {
         result = tmp.filter(notInHistory);
@@ -403,13 +410,12 @@ function LexiconLookup() {
 
     if (!result.length) {
       // allow words of different length
-      result = this.lex.similarByLetter(input, med, false).filter(notInHistory);
+      result = this.rlex.similarByLetter(input, med, false).filter(notInHistory);
       console.error('[WARN] 7. Any-length(' + input + '): ', result);
     }
 
     return result.length ?
-      result.sort(medShuffle) // give up, print warning, pick random
-      :
+      result.sort(medShuffle) : // give up, print warning, pick random
       fail(this, '8. *** fail->random(' + input + '):');
   };
 

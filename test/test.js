@@ -1,5 +1,6 @@
 var assert = require('assert'),
-  LexiconLookup = require('../automatype').LexiconLookup;
+  LexiconLookup = require('../automatype').LexiconLookup,
+  RiTa = require('rita');
 
 assert.undef = function(a) {
   assert(typeof a === 'undefined');
@@ -14,6 +15,18 @@ assert.setEqual = function(a, b) {
   b.sort();
   return assert.deepEqual(a, b);
 };
+
+describe('ContainsWord', function() {
+  it('should correctly answer', function() {
+      var ll = new LexiconLookup().rlex;
+      var words = ll.keys;
+      // problem words
+      words.push('dairys');
+      for (var i = 0; i < words.length; i++) {
+        assert.equal(RiTa.containsWord(words[i]), ll.containsWord(words[i]));
+      }
+  });
+});
 
 describe('HistoryQueue', function() {
   it('should provide basic fixed-sized history', function() {
@@ -44,7 +57,7 @@ describe('LexiconLookup', function() {
   describe('#similarByLetter(word, minMed)', function() {
     it('should return words with med > minMed', function() {
       var ll = new LexiconLookup(), res;
-      res = ll.lex.similarByLetter('mourner', 2, true);
+      res = ll.rlex.similarByLetter('mourner', 2, true);
       assert.setEqual(['journey', 'tourney', 'courier'], res);
     });
   });
@@ -65,7 +78,7 @@ describe('LexiconLookup', function() {
       res = ll.getInsertions('flak');
       assert.setEqual(['flank', 'flask', 'flake', 'flaks', 'flaky'], res);
       res = ll.getInsertions('maze');
-      assert.setEqual(['amaze'], res);
+      assert.setEqual(['amaze', 'mazes'], res);
       res = ll.getInsertions('hype');
       assert.setEqual(['hyped', 'hyper', 'hypes'], res);
       res = ll.getInsertions('veil');
