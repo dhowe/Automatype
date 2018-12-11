@@ -20,8 +20,10 @@ describe('ContainsWord', function() {
   it('should correctly answer', function() {
       var ll = new LexiconLookup().rlex;
       var words = ll.keys;
+
       // problem words
-      words.push('dairys');
+      words.push('selle');
+
       for (var i = 0; i < words.length; i++) {
         assert.equal(RiTa.containsWord(words[i]), ll.containsWord(words[i]));
       }
@@ -76,13 +78,13 @@ describe('LexiconLookup', function() {
     it('should return words with size word.length+1', function() {
       var ll = new LexiconLookup(), res;
       res = ll.getInsertions('flak');
-      assert.setEqual(['flank', 'flask', 'flake', 'flaks', 'flaky'], res);
+      assert.setEqual(['flank', 'flask', 'flake', 'flaky'], res);
       res = ll.getInsertions('maze');
-      assert.setEqual(['amaze', 'mazes'], res);
+      assert.setEqual(['amaze'], res);
       res = ll.getInsertions('hype');
-      assert.setEqual(['hyped', 'hyper', 'hypes'], res);
+      assert.setEqual(['hyped', 'hyper' ], res);
       res = ll.getInsertions('veil');
-      assert.setEqual(['veils'], res);
+      assert.setEqual([], res);
     });
   });
 
@@ -102,19 +104,17 @@ describe('LexiconLookup', function() {
     it('should return single words with size word.length+1', function() {
 
       var ll = new LexiconLookup(), res;
-      res = ll.getInsertion('flak');
-      assert.equal('flank' || 'flask', res);
 
       res = ll.getInsertion('maze');
       assert.equal('amaze', res);
 
       res = ll.getInsertion('hype');
-      assert.equal('hyped', res);
+      assert.ok(res=='hyped' || res=='hyper', res);
 
       ll.hq.add('flank'); // with history
       for (var i = 0; i < 5; i++) {
         res = ll.getInsertion('flak');
-        assert.equal('flask', res);
+        assert.ok(['flank' ,'flake' ,'flask' ,'flaky'].indexOf(res)>-1, res);
       }
     });
   });

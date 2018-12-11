@@ -324,10 +324,8 @@ function LexiconLookup() {
           if (sub != 's' || post.length > 0) {
             result.push(test);
           }
-          else
-            console.log("SKIP", test, pre, sub, post);
+          //else console.log("SKIP", test, pre, sub, post);
         }
-
       }
     }
     return result;
