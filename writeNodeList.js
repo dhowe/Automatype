@@ -1,5 +1,5 @@
 let fs = require('fs');
-let RiTa = require('./lib/rita-full');
+let RiTa = require('rita');
 let Automatype = require('./automatype').Automatype;
 
 let keys = new RiTa.RiLexicon().keys;

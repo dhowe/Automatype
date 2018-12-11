@@ -1,13 +1,8 @@
 let fs = require('fs');
-let RiTa = require('./lib/rita-full');
+let RiTa = require('rita');
 let Automatype = require('./automatype').Automatype;
 let words = JSON.parse(fs.readFileSync('allnodes.json', 'utf8'));
 let edgeFile = 'live-edges.csv';
-
-// let w = 'dreams';
-// console.error("FAILED ON: '"+w+"'", words[w], typeof w, RiTa.containsWord(w));
-//
-// return;
 
 let word, count = 0;
 let args = process.argv.slice(2);
@@ -52,7 +47,7 @@ onActionComplete = function (next, med) {
     let key = word + ',' + next + ',' + med;
     word && console.log(key);
     if (!words.hasOwnProperty(next))
-      throw Error('words['+next+'] -> '+words[next]);
+      throw Error('words['+next+'] = '+words[next]);
     if (!edgeData.hasOwnProperty[key]) {
       edgeData[key] = 0;
     }
