@@ -12,6 +12,10 @@ public class Automatype extends PApplet {
 	CursoredRiText word;
 	WordTransformCell cell;
 
+	public static void main(String[] args) {
+		PApplet.main(new String[]{"at.Automatype"});
+	}
+	
 	public void setup() {
 
 		size(680, 490);

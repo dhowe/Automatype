@@ -1,12 +1,12 @@
 var RiTa, RiLexicon;
-
+const DEFCOL = [0,0,0];
 // NEXT:
-// Verify random slection in delete/mutate
-// Rerun writeNodeList, then writeLiveEdges
-// IF ok, then run writeAllMeds[1,2,3]
+// When ok, then run writeLiveEdges 100000
+// Then check/run writeAllMeds[1,2,3]
 
 if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
-  RiTa = require('rita');
+  //RiTa = require('rita');
+  RiTa = require('./lib/rita-full');
   RiLexicon = RiTa.RiLexicon;
 }
 
@@ -28,8 +28,13 @@ function Automatype(wordCompleteCallback) {
 
   //console.log(this.word);
 
-  this.draw = function () {
-    fill(255 - bg);
+  this.draw = function (rgb) {
+
+    if (!rgb || rgb.length != 3) {
+      console.log('default bg: '+bg);
+      rgb = [255 - bg, 255 - bg, 255 - bg];
+    }
+    fill(rgb[0],rgb[1],rgb[2]);
     text(this.word, width / 2, height / 2);
 
     if (this.highlight) {
@@ -52,8 +57,8 @@ function Automatype(wordCompleteCallback) {
     this.cursorLastMove = millis();
 
     if (!this.target) {
-      typer.pickNextTarget();
-      typer.findNextEdit();
+      typer.pickNextTarget(); // this?
+      typer.findNextEdit(); // this?
     }
 
     if (this.nextPos < this.cursor) {
@@ -279,6 +284,10 @@ function LexiconLookup() {
   this.rlex = new RiLexicon();
   this.minHistorySize = 10;
 
+  this.wordExists = function(test) {
+    return this.rlex.data.hasOwnProperty(test);
+  };
+
   this.addToHistory = function (w) {
     this.hq.add(w);
   };
@@ -295,10 +304,11 @@ function LexiconLookup() {
 
   this.getDeletion = function (input) {
     var result = this.getDeletions(input);
-    // shuffle result ?
-    for (var i = 0; i < result.length; i++) {
-      if (!this.hq.contains(result[i])) {
-        return result[i];
+    var start = Math.floor(Math.random()*result.length);
+    for (var i = start; i < result.length+start; i++) {
+      var idx = i % result.length;
+      if (!this.hq.contains(result[idx])) {
+        return result[idx];
       }
     }
   };
@@ -309,7 +319,7 @@ function LexiconLookup() {
     for (var i = 0; i < len; i++) {
       var pre = input.substring(0, i),
         post = input.substring(i + 1);
-      if (this.rlex.containsWord(pre + post)) {
+      if (this.wordExists(pre + post)) {
         result.push(pre + post);
       }
     }
@@ -325,10 +335,10 @@ function LexiconLookup() {
       for (var j = 0; j < 26; j++) {
         var sub = String.fromCharCode(j + 97);
         var test = pre + sub + post;
-        if (this.rlex.containsWord(test)) {
-          if (sub != 's' || post.length > 0) {
+        if (this.wordExists(test)) {
+          //if ((sub != 's' && sub != 'e') || post.length > 0) {
             result.push(test);
-          }
+
           //else console.log("SKIP", test, pre, sub, post);
         }
       }
