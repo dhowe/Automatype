@@ -1,8 +1,4 @@
 var RiTa, RiLexicon;
-const DEFCOL = [0,0,0];
-// NEXT:
-// When ok, then run writeLiveEdges 100000
-// Then check/run writeAllMeds[1,2,3]
 
 if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
   //RiTa = require('rita');
