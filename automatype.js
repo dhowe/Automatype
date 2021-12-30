@@ -2,7 +2,7 @@ var RiTa, RiLexicon;
 
 if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
   //RiTa = require('rita');
-  RiTa = require('./lib/rita-triggers');
+  RiTa = require('./lib/rita-demographic');
   RiLexicon = RiTa.RiLexicon;
 }
 
