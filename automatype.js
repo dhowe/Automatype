@@ -2,7 +2,7 @@ var RiTa, RiLexicon;
 
 if (typeof module != 'undefined' && !process.versions.hasOwnProperty('electron')) {
   //RiTa = require('rita');
-  RiTa = require('./lib/rita-full');
+  RiTa = require('./lib/rita-triggers');
   RiLexicon = RiTa.RiLexicon;
 }
 
@@ -278,6 +278,7 @@ function LexiconLookup() {
   this.dbug = 0;
   this.hq = new HistoryQueue(20);
   this.rlex = new RiLexicon();
+  console.log(`rlex: ${Object.keys(this.rlex)}`);
   this.minHistorySize = 10;
 
   this.wordExists = function(test) {
